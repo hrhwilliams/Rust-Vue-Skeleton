@@ -36,10 +36,10 @@ async fn inc_counter(State(app_state): State<AppState>) -> impl IntoResponse {
 
 ### Frontend
 
-The Vue app is in `frontend/App.vue`. It uses `read_counter` and `increment` to
-read and modify the value of the counter on the backend. This is done by making
-requests to the `/counter` endpoint. The value of the counter is stored as a
-global variable.
+The Vue app is in `frontend/src/App.vue`. It uses `read_counter` and `increment`
+to read and modify the value of the counter on the backend. This is done by
+making requests to the `/counter` endpoint. The value of the counter is stored
+as a global variable.
 
 ```js
 const counter = ref<{ counter: number }>({ counter: 0 })
