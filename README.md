@@ -2,7 +2,9 @@
 
 Really simple web application to show off how to use Rust and Vue together.
 
-## Backend
+## Application structure
+
+### Backend
 
 In `src/main.rs` is the entirety of the backend. It uses Axum to route HTTP
 requests to the `/counter` endpoint. Making a GET request to `/counter` returns
@@ -32,7 +34,7 @@ async fn inc_counter(State(app_state): State<AppState>) -> impl IntoResponse {
 }
 ```
 
-## Frontend
+### Frontend
 
 The Vue app uses `read_counter` and `increment` to read and modify the value of
 the counter on the backend. This is done by making requests to the `/counter`
@@ -73,3 +75,13 @@ And is displayed on the web page along with a button to increment the counter:
 <p>The counter is at: {{ counter.counter }}</p>
 <input type="button" @click="increment" value="button" />
 ```
+
+## Running
+
+Run the following docker command:
+
+```
+docker compose up --build -d
+```
+
+and then navigate to http://localhost:5173/ in your browser.
