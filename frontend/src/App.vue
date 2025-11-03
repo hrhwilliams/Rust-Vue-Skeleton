@@ -3,6 +3,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 
 const counter = ref<{ counter: number }>({ counter: 0 })
 
+// ask the server what the value of the counter is
 function read_counter() {
   fetch("http://localhost:3000/counter")
     .then(response => response.json())
@@ -12,12 +13,14 @@ function read_counter() {
     .catch(() => {})
 }
 
+// tell the server to increment the counter
 function increment() {
   fetch("http://localhost:3000/counter", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" }
+    method: "POST"
   }).catch(() => {})
 }
+
+// call read_counter every 1000 ms
 
 let pollTimer: number | null = null
 

@@ -10,40 +10,43 @@ use serde::Serialize;
 use tokio::{net::TcpListener, sync::RwLock};
 use tower_http::cors::CorsLayer;
 
+/// Stores the value of the counter. This is passed around to the endpoints
+/// and modified by them.
 #[derive(Clone, Default)]
 struct AppState {
     counter: Arc<RwLock<u32>>,
 }
 
 impl AppState {
+    /// Return the value of the counter
     pub async fn read(&self) -> u32 {
         *self.counter.read().await
     }
 
+    /// Increment the counter
     pub async fn inc(&self) {
         let mut counter = self.counter.write().await;
         *counter += 1;
     }
 }
 
+/// A struct that gets serialized to a JSON and returned as a response to a GET
+/// request to "/counter"
 #[derive(Serialize)]
 struct ReadCounter {
     counter: u32,
 }
 
+/// Endpoint to return the current state of the counter as a JSON
 async fn read_counter(State(app_state): State<AppState>) -> impl IntoResponse {
     Json(ReadCounter {
         counter: app_state.read().await,
     })
 }
 
+/// Endpoint to increment the counter. Returns nothing
 async fn inc_counter(State(app_state): State<AppState>) -> impl IntoResponse {
-    tracing::info!("Incremented counter state");
-
     app_state.inc().await;
-    Json(ReadCounter {
-        counter: app_state.read().await,
-    })
 }
 
 #[tokio::main]
@@ -61,6 +64,8 @@ async fn main() -> Result<(), std::io::Error> {
 
     let app_state = AppState::default();
 
+    // Define routes for GET to "/counter" and POST to "/counter", bundle app
+    // state, and allow cross origin requests (will be coming from the frontend)
     let router = axum::Router::new()
         .route("/counter", get(read_counter))
         .route("/counter", post(inc_counter))
