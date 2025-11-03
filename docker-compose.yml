@@ -8,13 +8,3 @@ services:
     env_file:
       - .env
     command: cargo run
-  
-  frontend:
-    container_name: tinyevents-frontend
-    build:
-      context: ./frontend
-    volumes:
-      - /app/node_modules
-    ports:
-      - 5173:5173
-    command: npm run dev -- --host
