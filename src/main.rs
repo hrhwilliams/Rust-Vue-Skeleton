@@ -3,12 +3,12 @@ use std::{env, sync::Arc};
 use axum::{
     Json,
     extract::State,
-    response::IntoResponse,
+    response::{Html, IntoResponse},
     routing::{get, post},
 };
 use serde::Serialize;
 use tokio::{net::TcpListener, sync::RwLock};
-use tower_http::cors::CorsLayer;
+use tower_http::services::ServeDir;
 
 /// Stores the value of the counter. This is passed around to the endpoints
 /// and modified by them.
@@ -49,6 +49,10 @@ async fn inc_counter(State(app_state): State<AppState>) -> impl IntoResponse {
     app_state.inc().await;
 }
 
+async fn vue_passthrough() -> impl IntoResponse {
+    Html(include_str!("../frontend/dist/index.html"))
+}
+
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
     dotenvy::dotenv().ok();
@@ -64,13 +68,16 @@ async fn main() -> Result<(), std::io::Error> {
 
     let app_state = AppState::default();
 
+    let files = ServeDir::new("./frontend/dist");
+
     // Define routes for GET to "/counter" and POST to "/counter", bundle app
     // state, and allow cross origin requests (will be coming from the frontend)
     let router = axum::Router::new()
-        .route("/counter", get(read_counter))
-        .route("/counter", post(inc_counter))
-        .with_state(app_state)
-        .layer(CorsLayer::permissive());
+        .route("/api/counter", get(read_counter))
+        .route("/api/counter", post(inc_counter))
+        .route("/", get(vue_passthrough))
+        .fallback_service(files)
+        .with_state(app_state);
 
     axum::serve(listener, router.into_make_service()).await
 }

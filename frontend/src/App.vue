@@ -5,7 +5,7 @@ const counter = ref<{ counter: number }>({ counter: 0 })
 
 // Ask the server what the value of the counter is
 function read_counter() {
-  fetch("http://localhost:3000/counter")
+  fetch("/api/counter")
     .then(response => response.json())
     .then((data: any) => {
       if (data && typeof data.counter === 'number') counter.value = data
@@ -15,7 +15,7 @@ function read_counter() {
 
 // Tell the server to increment the counter
 function increment() {
-  fetch("http://localhost:3000/counter", {
+  fetch("/api/counter", {
     method: "POST"
   }).catch(() => {})
 }
