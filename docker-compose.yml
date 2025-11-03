@@ -3,8 +3,7 @@ services:
     container_name: tinyevents-backend
     build:
       context: .
-    ports:
-      - 3000:3000
     env_file:
       - .env
-    command: cargo run
+    ports:
+      - ${APP_PORT}:${APP_PORT}
