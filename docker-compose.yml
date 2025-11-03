@@ -1,9 +1,41 @@
 services:
-  backend:
-    container_name: tinyevents-backend
+  database:
+    image: postgres:18-alpine
+    container_name: app-db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    expose:
+      - ${DB_PORT}
+    volumes:
+      - pg:/data/postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    container_name: app
     build:
       context: .
     env_file:
       - .env
+    environment:
+      DATABASE_URL: "postgres://${DB_USER}:${DB_PASS}@database:${DB_PORT}/${DB_NAME}"
     ports:
       - ${APP_PORT}:${APP_PORT}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${APP_PORT}"]
+      interval: 1m
+      timeout: 10s
+      retries: 5
+    depends_on:
+      database:
+        condition: service_healthy
+
+volumes:
+  pg:

@@ -12,6 +12,7 @@ RUN cargo build --release
 
 FROM debian:bookworm-slim AS runtime
 WORKDIR /app
-COPY --from=frontend-builder /frontend /app/frontend
+COPY --from=backend-builder /build/frontend/dist /app/frontend/dist
 COPY --from=backend-builder /build/target/release/rust-vue-skeleton rust-vue-skeleton
+ENV DB_HOST=postgres
 CMD ["./rust-vue-skeleton"]
