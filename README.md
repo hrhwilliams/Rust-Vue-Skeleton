@@ -1,12 +1,12 @@
 # Rust-Vue Skeleton
 
-Really simple web application to show off how to use Rust and Vue together.
+Really simple web application to show off how to use [Rust](https://rust-lang.org/) and [Vue](https://vuejs.org/) together.
 
 ## Application structure
 
 ### Backend
 
-In `src/main.rs` is the entirety of the backend. It uses Axum to route HTTP
+In `src/main.rs` is the entirety of the backend. It uses [Axum](https://docs.rs/axum/latest/axum/) to route HTTP
 requests to the `/counter` endpoint. Making a GET request to `/counter` returns
 the current value in the counter, and making a POST request to `/counter`
 increments the counter. That router can be seen here:
@@ -79,7 +79,7 @@ And is displayed on the web page along with a button to increment the counter:
 
 ## Running
 
-Run the following docker command:
+Run the following [Docker](https://docs.docker.com/get-started/get-docker/) command:
 
 ```
 docker compose up --build -d
@@ -92,3 +92,4 @@ To shutdown the containers and delete any associated volumes, run:
 ```
 docker compose down -v
 ```
+
