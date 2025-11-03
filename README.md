@@ -86,3 +86,9 @@ docker compose up --build -d
 ```
 
 and then navigate to http://localhost:5173/ in your browser.
+
+To shutdown the containers and delete any associated volumes, run:
+
+```
+docker compose down -v
+```
