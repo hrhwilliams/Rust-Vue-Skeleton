@@ -13,10 +13,11 @@ increments the counter. That router can be seen here:
 
 ```rs
 let router = axum::Router::new()
-    .route("/counter", get(read_counter))
-    .route("/counter", post(inc_counter))
+    .route("/api/counter", get(read_counter))
+    .route("/api/counter", post(inc_counter))
+    // routes to '/' pass through to the index.html in frontend/
+    .route("/", get(vue_passthrough))
     .with_state(app_state)
-    .layer(CorsLayer::permissive());
 ```
 
 The two endpoint functions are very simple. They use an app state to store the
@@ -45,7 +46,7 @@ as a global variable.
 const counter = ref<{ counter: number }>({ counter: 0 })
 
 function read_counter() {
-  fetch("http://localhost:3000/counter")
+  fetch("/api/counter")
     .then(response => response.json())
     .then((data: any) => {
       if (data && typeof data.counter === 'number') counter.value = data
@@ -54,9 +55,8 @@ function read_counter() {
 }
 
 function increment() {
-  fetch("http://localhost:3000/counter", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" }
+  fetch("/api/counter", {
+    method: "POST"
   }).catch(() => {})
 }
 ```
@@ -85,7 +85,7 @@ Run the following [Docker](https://docs.docker.com/get-started/get-docker/) comm
 docker compose up --build -d
 ```
 
-and then navigate to http://localhost:5173/ in your browser.
+and then navigate to http://localhost:3000/ in your browser.
 
 To shutdown the containers and delete any associated volumes, run:
 
