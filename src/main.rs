@@ -1,53 +1,15 @@
-use std::{
-    collections::HashMap,
-    env,
-    sync::{
-        Arc,
-        atomic::{AtomicU32, Ordering::Relaxed},
-    },
-};
+use std::env;
 
 use axum::{
     Json,
-    extract::{Path, State},
-    http::StatusCode,
+    extract::State,
     response::{Html, IntoResponse},
     routing::{delete, get, post, put},
 };
-use rust_vue_skeleton::database::{
-    CreateEvent, CreateGroup, EventModel, GroupModel, PostgresDatabase,
-};
+use rust_vue_skeleton::{app::AppState, database::PostgresDatabase, routes};
 use serde::Serialize;
 use tokio::net::TcpListener;
 use tower_http::{services::ServeDir, trace::TraceLayer};
-use uuid::Uuid;
-
-/// Stores the value of the counter. This is passed around to the endpoints
-/// and modified by them.
-#[derive(Clone)]
-struct AppState {
-    db: PostgresDatabase,
-    counter: Arc<AtomicU32>,
-}
-
-impl AppState {
-    pub fn new(db: PostgresDatabase) -> Self {
-        Self {
-            db,
-            counter: Arc::new(AtomicU32::new(0)),
-        }
-    }
-
-    /// Return the value of the counter
-    pub fn read(&self) -> u32 {
-        self.counter.load(Relaxed)
-    }
-
-    /// Increment the counter
-    pub fn inc(&self) {
-        self.counter.fetch_add(1, Relaxed);
-    }
-}
 
 /// A struct that gets serialized to a JSON and returned as a response to a GET
 /// request to "/counter"
@@ -66,150 +28,6 @@ async fn read_counter(State(app_state): State<AppState>) -> impl IntoResponse {
 /// Endpoint to increment the counter. Returns nothing
 async fn inc_counter(State(app_state): State<AppState>) -> impl IntoResponse {
     app_state.inc();
-}
-
-async fn get_all_events(
-    State(app_state): State<AppState>,
-) -> Result<impl IntoResponse, StatusCode> {
-    let events = app_state
-        .db
-        .get_all_events()
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    Ok(Json(events))
-}
-
-async fn insert_event(
-    State(app_state): State<AppState>,
-    Json(create_event): Json<CreateEvent>,
-) -> Result<impl IntoResponse, StatusCode> {
-    let created_event = app_state
-        .db
-        .insert_event(create_event)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    Ok(Json(created_event))
-}
-
-async fn view_event(
-    State(app_state): State<AppState>,
-    Path(path): Path<HashMap<String, Uuid>>,
-) -> Result<impl IntoResponse, StatusCode> {
-    let id = path.get("id").ok_or(StatusCode::BAD_REQUEST)?;
-
-    let event = app_state
-        .db
-        .get_event(*id)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
-        .ok_or(StatusCode::NOT_FOUND)?;
-
-    Ok(Json(event))
-}
-
-async fn update_event(
-    State(app_state): State<AppState>,
-    Path(path): Path<HashMap<String, Uuid>>,
-    Json(create_event): Json<CreateEvent>,
-) -> Result<impl IntoResponse, StatusCode> {
-    let id = path.get("id").ok_or(StatusCode::BAD_REQUEST)?;
-
-    app_state
-        .db
-        .update_event(*id, create_event)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    Ok(())
-}
-
-async fn delete_event(
-    State(app_state): State<AppState>,
-    Path(path): Path<HashMap<String, Uuid>>,
-) -> Result<impl IntoResponse, StatusCode> {
-    let id = path.get("id").ok_or(StatusCode::BAD_REQUEST)?;
-
-    app_state
-        .db
-        .delete_event(*id)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    Ok(())
-}
-
-async fn get_all_groups(
-    State(app_state): State<AppState>,
-) -> Result<impl IntoResponse, StatusCode> {
-    let groups = app_state
-        .db
-        .get_all_groups()
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    Ok(Json(groups))
-}
-
-async fn insert_group(
-    State(app_state): State<AppState>,
-    Json(create_group): Json<CreateGroup>,
-) -> Result<impl IntoResponse, StatusCode> {
-    let created_group = app_state
-        .db
-        .insert_group(create_group)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    Ok(Json(created_group))
-}
-
-async fn view_group(
-    State(app_state): State<AppState>,
-    Path(path): Path<HashMap<String, Uuid>>,
-) -> Result<impl IntoResponse, StatusCode> {
-    let id = path.get("id").ok_or(StatusCode::BAD_REQUEST)?;
-
-    let group = app_state
-        .db
-        .get_group(*id)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
-        .ok_or(StatusCode::NOT_FOUND)?;
-
-    Ok(Json(group))
-}
-
-async fn update_group(
-    State(app_state): State<AppState>,
-    Path(path): Path<HashMap<String, Uuid>>,
-    Json(create_group): Json<CreateGroup>,
-) -> Result<impl IntoResponse, StatusCode> {
-    let id = path.get("id").ok_or(StatusCode::BAD_REQUEST)?;
-
-    app_state
-        .db
-        .update_group(*id, create_group)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    Ok(())
-}
-
-async fn delete_group(
-    State(app_state): State<AppState>,
-    Path(path): Path<HashMap<String, Uuid>>,
-) -> Result<impl IntoResponse, StatusCode> {
-    let id = path.get("id").ok_or(StatusCode::BAD_REQUEST)?;
-
-    app_state
-        .db
-        .delete_group(*id)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    Ok(())
 }
 
 /// Passthrough to the Vue app
@@ -256,16 +74,16 @@ async fn main() -> Result<(), std::io::Error> {
     let router = axum::Router::new()
         .route("/api/counter", get(read_counter))
         .route("/api/counter", post(inc_counter))
-        .route("/api/events", get(get_all_events))
-        .route("/api/event", post(insert_event))
-        .route("/api/event/{id}", get(view_event))
-        .route("/api/event/{id}", put(update_event))
-        .route("/api/event/{id}", delete(delete_event))
-        .route("/api/groups", get(get_all_groups))
-        .route("/api/group", post(insert_group))
-        .route("/api/group/{id}", get(view_group))
-        .route("/api/group/{id}", put(update_group))
-        .route("/api/group/{id}", delete(delete_group))
+        .route("/api/events", get(routes::get_all_events))
+        .route("/api/event", post(routes::insert_event))
+        .route("/api/event/{id}", get(routes::view_event))
+        .route("/api/event/{id}", put(routes::update_event))
+        .route("/api/event/{id}", delete(routes::delete_event))
+        .route("/api/groups", get(routes::get_all_groups))
+        .route("/api/group", post(routes::insert_group))
+        .route("/api/group/{id}", get(routes::view_group))
+        .route("/api/group/{id}", put(routes::update_group))
+        .route("/api/group/{id}", delete(routes::delete_group))
         .route("/", get(vue_passthrough))
         .layer(TraceLayer::new_for_http())
         .fallback_service(files)
