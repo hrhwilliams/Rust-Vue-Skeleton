@@ -15,7 +15,7 @@ docker run \
     --name "${CONTAINER_NAME}" \
     postgres:18-alpine -N 1000
 
-export DATABASE_URL="postgres://${DB_NAME}:${DB_PASS}@localhost:${DB_PORT}/${DB_NAME}"
+export DATABASE_URL="postgres://${DB_USER}:${DB_PASS}@localhost:${DB_PORT}/${DB_NAME}"
 echo $DATABASE_URL
 
 sqlx database create
