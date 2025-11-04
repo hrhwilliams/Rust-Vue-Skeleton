@@ -4,9 +4,13 @@ use axum::{
     Json,
     extract::State,
     response::{Html, IntoResponse},
-    routing::{delete, get, post, put},
+    routing::{get, post},
 };
-use rust_vue_skeleton::{app::AppState, database::PostgresDatabase, routes};
+use rust_vue_skeleton::{
+    app::AppState,
+    database::PostgresDatabase,
+    routes::{EventRoutes, GroupRoutes},
+};
 use serde::Serialize;
 use tokio::net::TcpListener;
 use tower_http::{services::ServeDir, trace::TraceLayer};
@@ -74,16 +78,8 @@ async fn main() -> Result<(), std::io::Error> {
     let router = axum::Router::new()
         .route("/api/counter", get(read_counter))
         .route("/api/counter", post(inc_counter))
-        .route("/api/events", get(routes::get_all_events))
-        .route("/api/event", post(routes::insert_event))
-        .route("/api/event/{id}", get(routes::view_event))
-        .route("/api/event/{id}", put(routes::update_event))
-        .route("/api/event/{id}", delete(routes::delete_event))
-        .route("/api/groups", get(routes::get_all_groups))
-        .route("/api/group", post(routes::insert_group))
-        .route("/api/group/{id}", get(routes::view_group))
-        .route("/api/group/{id}", put(routes::update_group))
-        .route("/api/group/{id}", delete(routes::delete_group))
+        .nest("/api", EventRoutes::router())
+        .nest("/api", GroupRoutes::router())
         .route("/", get(vue_passthrough))
         .layer(TraceLayer::new_for_http())
         .fallback_service(files)
