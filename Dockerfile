@@ -8,6 +8,7 @@ FROM rust:1.90-slim-bookworm AS backend-builder
 WORKDIR /build
 COPY . /build
 COPY --from=frontend-builder /frontend/dist /build/frontend/dist
+ENV SQLX_OFFLINE=true
 RUN cargo build --release
 
 FROM debian:bookworm-slim AS runtime
