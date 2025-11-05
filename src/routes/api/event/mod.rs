@@ -15,6 +15,7 @@ pub struct EventRoutes;
 impl EventRoutes {
     pub fn router() -> Router<AppState> {
         Router::<AppState>::new()
+            // /events to view all, /events?group_id=... to query by group_id
             .route("/events", get(view::get_all_events))
             .route("/event/{id}", get(view::view_event))
             .route("/event/{id}", post(create::insert_event))
