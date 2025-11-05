@@ -1,6 +1,8 @@
+use std::collections::HashMap;
+
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use sqlx::prelude::FromRow;
+use sqlx::{QueryBuilder, prelude::FromRow};
 use uuid::Uuid;
 
 use crate::database::PostgresDatabase;
@@ -24,6 +26,8 @@ pub struct CreatedGroup {
 #[async_trait]
 pub trait GroupModel {
     async fn get_all_groups(&self) -> Result<Vec<Group>, sqlx::Error>;
+    async fn query_groups(&self, query: HashMap<String, String>)
+    -> Result<Vec<Group>, sqlx::Error>;
     async fn get_group(&self, id: Uuid) -> Result<Option<Group>, sqlx::Error>;
     async fn insert_group(&self, create_group: CreateGroup) -> Result<CreatedGroup, sqlx::Error>;
     async fn update_group(&self, id: Uuid, create_group: CreateGroup) -> Result<(), sqlx::Error>;
@@ -38,6 +42,21 @@ impl GroupModel for PostgresDatabase {
             .await?;
 
         Ok(groups)
+    }
+
+    async fn query_groups(
+        &self,
+        query: HashMap<String, String>,
+    ) -> Result<Vec<Group>, sqlx::Error> {
+        let mut query_builder = QueryBuilder::new("SELECT * FROM groups WHERE 1=1");
+
+        if let Some(name) = query.get("name") {
+            query_builder.push(" AND name = ");
+            query_builder.push_bind(name);
+        }
+
+        let query = query_builder.build_query_as::<Group>();
+        Ok(query.fetch_all(&self.pool).await?)
     }
 
     async fn get_group(&self, id: Uuid) -> Result<Option<Group>, sqlx::Error> {

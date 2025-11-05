@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     response::IntoResponse,
 };
@@ -12,12 +12,21 @@ use crate::{app::AppState, database::GroupModel};
 
 pub async fn get_all_groups(
     State(app_state): State<AppState>,
+    Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let groups = app_state
-        .db
-        .get_all_groups()
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let groups = if query.is_empty() {
+        app_state
+            .db
+            .get_all_groups()
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+    } else {
+        app_state
+            .db
+            .query_groups(query)
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+    };
 
     Ok(Json(groups))
 }
