@@ -15,6 +15,7 @@ pub struct GroupRoutes;
 impl GroupRoutes {
     pub fn router() -> Router<AppState> {
         Router::<AppState>::new()
+            // /groups to view all, /groups?name=... to query by name
             .route("/groups", get(view::get_all_groups))
             .route("/group/{id}", get(view::view_group))
             .route("/group/{id}", post(create::insert_group))
