@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     response::IntoResponse,
 };
@@ -12,12 +12,21 @@ use crate::{app::AppState, database::EventModel};
 
 pub async fn get_all_events(
     State(app_state): State<AppState>,
+    Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, StatusCode> {
-    let events = app_state
-        .db
-        .get_all_events()
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let events = if query.is_empty() {
+        app_state
+            .db
+            .get_all_events()
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+    } else {
+        app_state
+            .db
+            .query_events(query)
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+    };
 
     Ok(Json(events))
 }
