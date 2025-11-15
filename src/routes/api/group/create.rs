@@ -1,19 +1,19 @@
-use axum::{Json, extract::State, http::StatusCode, response::IntoResponse};
+use axum::{Json, extract::State, response::IntoResponse};
 
 use crate::{
     app::AppState,
-    database::{CreateGroup, GroupModel},
+    database::{CreateGroup, GroupModel}, errors::ApiError,
 };
 
 pub async fn insert_group(
     State(app_state): State<AppState>,
     Json(create_group): Json<CreateGroup>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, ApiError> {
     let created_group = app_state
         .db
         .insert_group(create_group)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
 
     Ok(Json(created_group))
 }

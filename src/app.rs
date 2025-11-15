@@ -1,33 +1,53 @@
-use std::sync::{Arc, atomic::AtomicU32};
+use axum::{
+    Router,
+    response::{Html, IntoResponse},
+    routing::get,
+};
+use tokio::net::TcpListener;
+use tower_http::{services::ServeDir, trace::TraceLayer};
 
-use crate::database::PostgresDatabase;
+use crate::{
+    database::PostgresDatabase,
+    routes::{EventRoutes, GroupRoutes},
+};
 
-/// Stores the value of the counter. This is passed around to the endpoints
-/// and modified by them.
 #[derive(Clone)]
 pub struct AppState {
     pub db: PostgresDatabase,
-    counter: Arc<AtomicU32>,
 }
 
 impl AppState {
     pub fn new(db: PostgresDatabase) -> Self {
-        Self {
-            db,
-            counter: Arc::new(AtomicU32::new(0)),
-        }
-    }
-
-    /// Return the value of the counter
-    pub fn read(&self) -> u32 {
-        self.counter.load(std::sync::atomic::Ordering::Relaxed)
-    }
-
-    /// Increment the counter
-    pub fn inc(&self) {
-        self.counter
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        Self { db }
     }
 }
 
-pub struct App;
+/// Passthrough to the Vue app
+async fn vue_passthrough() -> impl IntoResponse {
+    Html(include_str!("../frontend/dist/index.html"))
+}
+
+pub struct App {
+    router: Router,
+}
+
+impl App {
+    pub fn new(db: PostgresDatabase) -> Self {
+        let app_state = AppState::new(db);
+        let files = ServeDir::new("./frontend/dist");
+
+        let router = Router::new()
+            .nest("/api", EventRoutes::router())
+            .nest("/api", GroupRoutes::router())
+            .route("/", get(vue_passthrough))
+            .layer(TraceLayer::new_for_http())
+            .fallback_service(files)
+            .with_state(app_state);
+
+        Self { router }
+    }
+
+    pub async fn serve(self, listener: TcpListener) -> Result<(), std::io::Error> {
+        axum::serve(listener, self.router.into_make_service()).await
+    }
+}

@@ -26,8 +26,7 @@ pub struct CreatedGroup {
 #[async_trait]
 pub trait GroupModel {
     async fn get_all_groups(&self) -> Result<Vec<Group>, sqlx::Error>;
-    async fn query_groups(&self, query: HashMap<String, String>)
-    -> Result<Vec<Group>, sqlx::Error>;
+    async fn query_groups(&self, query: HashMap<String, String>) -> Result<Vec<Group>, sqlx::Error>;
     async fn get_group(&self, id: Uuid) -> Result<Option<Group>, sqlx::Error>;
     async fn insert_group(&self, create_group: CreateGroup) -> Result<CreatedGroup, sqlx::Error>;
     async fn update_group(&self, id: Uuid, create_group: CreateGroup) -> Result<(), sqlx::Error>;
@@ -44,10 +43,7 @@ impl GroupModel for PostgresDatabase {
         Ok(groups)
     }
 
-    async fn query_groups(
-        &self,
-        query: HashMap<String, String>,
-    ) -> Result<Vec<Group>, sqlx::Error> {
+    async fn query_groups(&self, query: HashMap<String, String>) -> Result<Vec<Group>, sqlx::Error> {
         let mut query_builder = QueryBuilder::new("SELECT * FROM groups WHERE 1=1");
 
         if let Some(name) = query.get("name") {
@@ -70,25 +66,17 @@ impl GroupModel for PostgresDatabase {
     async fn insert_group(&self, create_group: CreateGroup) -> Result<CreatedGroup, sqlx::Error> {
         let id = Uuid::new_v4();
 
-        sqlx::query!(
-            "INSERT INTO groups (id, name) VALUES ($1, $2)",
-            id,
-            create_group.name
-        )
-        .execute(&self.pool)
-        .await?;
+        sqlx::query!("INSERT INTO groups (id, name) VALUES ($1, $2)", id, create_group.name)
+            .execute(&self.pool)
+            .await?;
 
         Ok(CreatedGroup { group_id: id })
     }
 
     async fn update_group(&self, id: Uuid, create_group: CreateGroup) -> Result<(), sqlx::Error> {
-        sqlx::query!(
-            "UPDATE groups SET name = $2 WHERE id = $1",
-            id,
-            create_group.name
-        )
-        .execute(&self.pool)
-        .await?;
+        sqlx::query!("UPDATE groups SET name = $2 WHERE id = $1", id, create_group.name)
+            .execute(&self.pool)
+            .await?;
 
         Ok(())
     }

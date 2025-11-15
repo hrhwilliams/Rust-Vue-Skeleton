@@ -39,8 +39,7 @@ pub struct CreatedEvent {
 #[async_trait]
 pub trait EventModel {
     async fn get_all_events(&self) -> Result<Vec<Event>, sqlx::Error>;
-    async fn query_events(&self, query: HashMap<String, String>)
-    -> Result<Vec<Event>, sqlx::Error>;
+    async fn query_events(&self, query: HashMap<String, String>) -> Result<Vec<Event>, sqlx::Error>;
     async fn get_event(&self, id: Uuid) -> Result<Option<Event>, sqlx::Error>;
     async fn insert_event(&self, create_event: CreateEvent) -> Result<CreatedEvent, sqlx::Error>;
     async fn update_event(&self, id: Uuid, create_event: CreateEvent) -> Result<(), sqlx::Error>;
@@ -57,10 +56,7 @@ impl EventModel for PostgresDatabase {
         Ok(events)
     }
 
-    async fn query_events(
-        &self,
-        query: HashMap<String, String>,
-    ) -> Result<Vec<Event>, sqlx::Error> {
+    async fn query_events(&self, query: HashMap<String, String>) -> Result<Vec<Event>, sqlx::Error> {
         let mut query_builder = QueryBuilder::new("SELECT * FROM events WHERE 1=1");
 
         if let Some(starts_at_str) = query.get("starts_at") {
