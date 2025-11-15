@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use axum::{
     Json,
     extract::{Path, Query, State},
-    http::StatusCode,
     response::IntoResponse,
 };
 use uuid::Uuid;
