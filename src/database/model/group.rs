@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use sqlx::{QueryBuilder, prelude::FromRow};
+use time::OffsetDateTime;
 use uuid::Uuid;
 
 use crate::database::PostgresDatabase;
@@ -11,6 +12,8 @@ use crate::database::PostgresDatabase;
 pub struct Group {
     pub id: Uuid,
     pub name: String,
+    #[serde(with = "time::serde::rfc3339")]
+    pub created_at: OffsetDateTime,
 }
 
 #[derive(Deserialize)]

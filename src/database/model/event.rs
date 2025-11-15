@@ -18,6 +18,8 @@ pub struct Event {
     pub starts_at: OffsetDateTime,
     #[serde(with = "time::serde::rfc3339")]
     pub ends_at: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
+    pub created_at: OffsetDateTime,
 }
 
 #[derive(Deserialize)]

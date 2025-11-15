@@ -18,7 +18,7 @@ impl EventRoutes {
             // /events to view all, /events?group_id=... to query by group_id
             .route("/events", get(view::get_all_events))
             .route("/event/{id}", get(view::view_event))
-            .route("/event/{id}", post(create::insert_event))
+            .route("/event", post(create::insert_event))
             .route("/event/{id}", put(update::update_event))
             .route("/event/{id}", delete(delete::delete_event))
     }

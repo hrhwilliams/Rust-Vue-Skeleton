@@ -18,7 +18,7 @@ impl GroupRoutes {
             // /groups to view all, /groups?name=... to query by name
             .route("/groups", get(view::get_all_groups))
             .route("/group/{id}", get(view::view_group))
-            .route("/group/{id}", post(create::insert_group))
+            .route("/group", post(create::insert_group))
             .route("/group/{id}", put(update::update_group))
             .route("/group/{id}", delete(delete::delete_group))
     }

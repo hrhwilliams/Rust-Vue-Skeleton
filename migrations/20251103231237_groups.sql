@@ -1,5 +1,6 @@
 -- Add migration script here
-CREATE TABLE groups(
-    id uuid PRIMARY KEY,
-    name TEXT UNIQUE NOT NULL
+create table groups(
+    id uuid primary key,
+    name text unique not null,
+    created_at timestamptz not null default now()
 )
