@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE groups SET name = $2 WHERE id = $1",
+  "query": "UPDATE groups SET name = $2 WHERE vrc_group_id = $1",
   "describe": {
     "columns": [],
     "parameters": {
@@ -11,5 +11,5 @@
     },
     "nullable": []
   },
-  "hash": "b07990f619dfe814016261487ee34b19f56d51687c430f5ea32469f8a747ef44"
+  "hash": "0031f357457c6b0ccde8c97f91384637b1e7c624cce8db665ad1dd2464aa15f7"
 }

@@ -1,81 +1,75 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM events WHERE id = $1",
+  "query": "SELECT * FROM events WHERE vrc_event_id = $1",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "id",
-        "type_info": "Uuid"
-      },
-      {
-        "ordinal": 1,
-        "name": "group_id",
-        "type_info": "Text"
-      },
-      {
-        "ordinal": 2,
         "name": "vrc_event_id",
         "type_info": "Text"
       },
       {
-        "ordinal": 3,
+        "ordinal": 1,
+        "name": "vrc_group_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
         "name": "name",
         "type_info": "Text"
       },
       {
-        "ordinal": 4,
+        "ordinal": 3,
         "name": "description",
         "type_info": "Text"
       },
       {
-        "ordinal": 5,
+        "ordinal": 4,
         "name": "starts_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 6,
+        "ordinal": 5,
         "name": "ends_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 7,
+        "ordinal": 6,
         "name": "category",
         "type_info": "Text"
       },
       {
-        "ordinal": 8,
+        "ordinal": 7,
         "name": "access_type",
         "type_info": "Text"
       },
       {
-        "ordinal": 9,
+        "ordinal": 8,
         "name": "platforms",
         "type_info": "TextArray"
       },
       {
-        "ordinal": 10,
+        "ordinal": 9,
         "name": "image_url",
         "type_info": "Text"
       },
       {
-        "ordinal": 11,
+        "ordinal": 10,
         "name": "tags",
         "type_info": "TextArray"
       },
       {
-        "ordinal": 12,
+        "ordinal": 11,
         "name": "created_at",
         "type_info": "Timestamptz"
       }
     ],
     "parameters": {
       "Left": [
-        "Uuid"
+        "Text"
       ]
     },
     "nullable": [
-      false,
       false,
       false,
       false,
@@ -90,5 +84,5 @@
       false
     ]
   },
-  "hash": "0cf5984b72b82841f4b03c7f2159fadc7d3adeb125e715411de12e8a49afd0cb"
+  "hash": "9ddb4724ceba76824bb43df6864ac7af6a38e80596b9951d3fd52327cba2902a"
 }

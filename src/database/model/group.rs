@@ -9,15 +9,15 @@ use crate::database::PostgresDatabase;
 
 #[derive(Serialize, FromRow)]
 pub struct Group {
-    pub id: String,
+    pub vrc_group_id: String,
     pub name: String,
     #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct CreateGroup {
-    pub group_id: String,
+    pub vrc_group_id: String,
     pub name: String,
 }
 
@@ -59,7 +59,7 @@ impl GroupModel for PostgresDatabase {
     }
 
     async fn get_group(&self, id: &str) -> Result<Option<Group>, sqlx::Error> {
-        let group = sqlx::query_as!(Group, "SELECT * FROM groups WHERE id = $1", id)
+        let group = sqlx::query_as!(Group, "SELECT * FROM groups WHERE vrc_group_id = $1", id)
             .fetch_optional(&self.pool)
             .await?;
 
@@ -67,15 +67,21 @@ impl GroupModel for PostgresDatabase {
     }
 
     async fn insert_group(&self, create_group: CreateGroup) -> Result<CreatedGroup, sqlx::Error> {
-        sqlx::query!("INSERT INTO groups (id, name) VALUES ($1, $2)", create_group.group_id, create_group.name)
-            .execute(&self.pool)
-            .await?;
+        sqlx::query!(
+            "INSERT INTO groups (vrc_group_id, name) VALUES ($1, $2)",
+            create_group.vrc_group_id,
+            create_group.name
+        )
+        .execute(&self.pool)
+        .await?;
 
-        Ok(CreatedGroup { group_id: create_group.group_id })
+        Ok(CreatedGroup {
+            group_id: create_group.vrc_group_id,
+        })
     }
 
     async fn update_group(&self, id: &str, create_group: CreateGroup) -> Result<(), sqlx::Error> {
-        sqlx::query!("UPDATE groups SET name = $2 WHERE id = $1", id, create_group.name)
+        sqlx::query!("UPDATE groups SET name = $2 WHERE vrc_group_id = $1", id, create_group.name)
             .execute(&self.pool)
             .await?;
 
@@ -83,7 +89,7 @@ impl GroupModel for PostgresDatabase {
     }
 
     async fn delete_group(&self, id: &str) -> Result<(), sqlx::Error> {
-        sqlx::query!("DELETE FROM groups WHERE id = $1", id)
+        sqlx::query!("DELETE FROM groups WHERE vrc_group_id = $1", id)
             .execute(&self.pool)
             .await?;
 

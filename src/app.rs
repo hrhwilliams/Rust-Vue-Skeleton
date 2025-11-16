@@ -1,10 +1,18 @@
 use axum::{
     Router,
+    body::Body,
+    http::{HeaderName, Request},
     response::{Html, IntoResponse},
     routing::get,
 };
 use tokio::net::TcpListener;
-use tower_http::{services::ServeDir, trace::TraceLayer};
+use tower::ServiceBuilder;
+use tower_http::{
+    request_id::{MakeRequestUuid, SetRequestIdLayer},
+    services::ServeDir,
+    trace::{DefaultOnResponse, TraceLayer},
+};
+use tracing::Level;
 
 use crate::{
     database::PostgresDatabase,
@@ -40,7 +48,32 @@ impl App {
             .nest("/api", EventRoutes::router())
             .nest("/api", GroupRoutes::router())
             .route("/", get(vue_passthrough))
-            .layer(TraceLayer::new_for_http())
+            .layer(
+                ServiceBuilder::new()
+                    .layer(SetRequestIdLayer::new(
+                        HeaderName::from_static("x-request-id"),
+                        MakeRequestUuid,
+                    ))
+                    .layer(
+                        TraceLayer::new_for_http()
+                            .make_span_with(|request: &Request<Body>| {
+                                let id = request
+                                    .headers()
+                                    .get("x-request-id")
+                                    .and_then(|value| value.to_str().ok())
+                                    .unwrap_or("unknown");
+                                tracing::span!(
+                                    Level::INFO,
+                                    "request",
+                                    id = id,
+                                    method = %request.method(),
+                                    uri = %request.uri(),
+                                    user_agent = tracing::field::Empty,
+                                )
+                            })
+                            .on_response(DefaultOnResponse::new().level(Level::INFO)),
+                    ),
+            )
             .fallback_service(files)
             .with_state(app_state);
 

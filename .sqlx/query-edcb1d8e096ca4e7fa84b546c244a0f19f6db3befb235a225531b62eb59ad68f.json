@@ -5,7 +5,7 @@
     "columns": [
       {
         "ordinal": 0,
-        "name": "id",
+        "name": "vrc_group_id",
         "type_info": "Text"
       },
       {

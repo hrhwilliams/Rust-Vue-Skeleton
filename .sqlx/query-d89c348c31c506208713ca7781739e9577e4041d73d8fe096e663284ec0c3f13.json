@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "DELETE FROM groups WHERE id = $1",
+  "query": "DELETE FROM groups WHERE vrc_group_id = $1",
   "describe": {
     "columns": [],
     "parameters": {
@@ -10,5 +10,5 @@
     },
     "nullable": []
   },
-  "hash": "e32a3145dae26932ca954c47505310de539335e259d2ab03080dca8f232387fb"
+  "hash": "d89c348c31c506208713ca7781739e9577e4041d73d8fe096e663284ec0c3f13"
 }

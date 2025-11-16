@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE events SET\n              name = $2, description = $3, starts_at = $4, ends_at = $5, category = $6, access_type = $7, platforms = $8, image_url = $9, tags = $10\n            WHERE\n              vrc_event_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Timestamptz",
+        "Timestamptz",
+        "Text",
+        "Text",
+        "TextArray",
+        "Text",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "041491940fff2ef69083f4fcad265307dbac44bea6ee00e9d913b0d9f93b0785"
+}

@@ -12,6 +12,7 @@ use crate::{
     errors::ApiError,
 };
 
+#[tracing::instrument(skip(app_state))]
 pub async fn get_all_groups(
     State(app_state): State<AppState>,
     Query(query): Query<HashMap<String, String>>,
@@ -33,6 +34,7 @@ pub async fn get_all_groups(
     Ok(Json(groups))
 }
 
+#[tracing::instrument(skip(app_state))]
 pub async fn view_group(
     State(app_state): State<AppState>,
     Path(path): Path<HashMap<String, String>>,

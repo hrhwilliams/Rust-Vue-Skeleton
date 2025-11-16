@@ -7,6 +7,7 @@ use crate::{
     extractors::AuthenticatedApiUser,
 };
 
+#[tracing::instrument(skip(app_state))]
 pub async fn insert_group(
     AuthenticatedApiUser(_user_agent): AuthenticatedApiUser,
     State(app_state): State<AppState>,

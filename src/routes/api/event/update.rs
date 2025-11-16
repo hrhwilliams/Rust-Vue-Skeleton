@@ -5,7 +5,6 @@ use axum::{
     extract::{Path, State},
     response::IntoResponse,
 };
-use uuid::Uuid;
 
 use crate::{
     app::AppState,
@@ -14,17 +13,18 @@ use crate::{
     extractors::AuthenticatedApiUser,
 };
 
+#[tracing::instrument(skip(app_state))]
 pub async fn update_event(
     AuthenticatedApiUser(_user_agent): AuthenticatedApiUser,
     State(app_state): State<AppState>,
-    Path(path): Path<HashMap<String, Uuid>>,
+    Path(path): Path<HashMap<String, String>>,
     Json(create_event): Json<CreateEvent>,
 ) -> Result<impl IntoResponse, ApiError> {
     let id = path.get("id").ok_or(ApiError::BadRequest)?;
 
     app_state
         .db
-        .update_event(*id, create_event)
+        .update_event(id, create_event)
         .await
         .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
 

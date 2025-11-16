@@ -37,7 +37,7 @@ impl FromRequestParts<AppState> for AuthenticatedApiUser {
         //     tracing::info!("Login attempt by IP: '{}' via User-Agent '{}'", ip, user_agent);
         // })?;
 
-        // tracing::Span::current().record("user_agent", tracing::field::display(&user_record.user_agent));
+        tracing::Span::current().record("user_agent", tracing::field::display(&user_agent));
 
         if has_api_key {
             Ok(AuthenticatedApiUser(user_agent.to_string()))

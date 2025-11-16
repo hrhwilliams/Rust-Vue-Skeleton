@@ -1,8 +1,7 @@
 -- Add migration script here
 create table events(
-    id uuid primary key,
-    group_id text not null references groups(id) on delete cascade,
-    vrc_event_id text not null,
+    vrc_event_id text primary key,
+    vrc_group_id text not null references groups(vrc_group_id) on delete cascade,
     name text unique not null,
     description text not null,
     starts_at timestamptz not null,

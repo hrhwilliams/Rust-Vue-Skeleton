@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO groups (id, name) VALUES ($1, $2)",
+  "query": "INSERT INTO groups (vrc_group_id, name) VALUES ($1, $2)",
   "describe": {
     "columns": [],
     "parameters": {
@@ -11,5 +11,5 @@
     },
     "nullable": []
   },
-  "hash": "be3e3336329486bab6ffb813917d73b8e6aef525149944f55501e3ba230480c3"
+  "hash": "f680d629cb4f3e253ffa9c25ea0074b613057ebb41c0c1fae5f4c55854674144"
 }

@@ -4,15 +4,13 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use sqlx::{QueryBuilder, prelude::FromRow};
 use time::{OffsetDateTime, format_description::well_known::Rfc3339};
-use uuid::Uuid;
 
 use crate::database::PostgresDatabase;
 
 #[derive(Serialize, FromRow)]
 pub struct Event {
-    pub id: Uuid,
     pub vrc_event_id: String,
-    pub group_id: String,
+    pub vrc_group_id: String,
     pub name: String,
     pub description: String,
     #[serde(with = "time::serde::rfc3339")]
@@ -28,10 +26,10 @@ pub struct Event {
     pub created_at: OffsetDateTime,
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct CreateEvent {
-    pub group_id: String,
     pub vrc_event_id: String,
+    pub vrc_group_id: String,
     pub name: String,
     pub description: String,
     #[serde(with = "time::serde::rfc3339")]
@@ -47,17 +45,17 @@ pub struct CreateEvent {
 
 #[derive(Serialize)]
 pub struct CreatedEvent {
-    pub event_id: Uuid,
+    pub vrc_event_id: String,
 }
 
 #[async_trait]
 pub trait EventModel {
     async fn get_all_events(&self) -> Result<Vec<Event>, sqlx::Error>;
     async fn query_events(&self, query: HashMap<String, String>) -> Result<Vec<Event>, sqlx::Error>;
-    async fn get_event(&self, id: Uuid) -> Result<Option<Event>, sqlx::Error>;
+    async fn get_event(&self, id: &str) -> Result<Option<Event>, sqlx::Error>;
     async fn insert_event(&self, create_event: CreateEvent) -> Result<CreatedEvent, sqlx::Error>;
-    async fn update_event(&self, id: Uuid, create_event: CreateEvent) -> Result<(), sqlx::Error>;
-    async fn delete_event(&self, id: Uuid) -> Result<(), sqlx::Error>;
+    async fn update_event(&self, id: &str, create_event: CreateEvent) -> Result<(), sqlx::Error>;
+    async fn delete_event(&self, id: &str) -> Result<(), sqlx::Error>;
 }
 
 #[async_trait]
@@ -89,7 +87,7 @@ impl EventModel for PostgresDatabase {
         }
 
         if let Some(group_id) = query.get("group_id") {
-            query_builder.push(" AND group_id = ");
+            query_builder.push(" AND vrc_group_id = ");
             query_builder.push_bind(group_id);
         }
 
@@ -97,8 +95,8 @@ impl EventModel for PostgresDatabase {
         Ok(query.fetch_all(&self.pool).await?)
     }
 
-    async fn get_event(&self, id: Uuid) -> Result<Option<Event>, sqlx::Error> {
-        let event = sqlx::query_as!(Event, "SELECT * FROM events WHERE id = $1", id)
+    async fn get_event(&self, id: &str) -> Result<Option<Event>, sqlx::Error> {
+        let event = sqlx::query_as!(Event, "SELECT * FROM events WHERE vrc_event_id = $1", id)
             .fetch_optional(&self.pool)
             .await?;
 
@@ -106,16 +104,13 @@ impl EventModel for PostgresDatabase {
     }
 
     async fn insert_event(&self, create_event: CreateEvent) -> Result<CreatedEvent, sqlx::Error> {
-        let id = Uuid::new_v4();
-
         sqlx::query!(
             r#"INSERT INTO events
-              (id, group_id, vrc_event_id, name, description, starts_at, ends_at, category, access_type, platforms, image_url, tags)
+              (vrc_event_id, vrc_group_id, name, description, starts_at, ends_at, category, access_type, platforms, image_url, tags)
             VALUES
-              ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"#,
-            id,
-            create_event.group_id,
+              ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"#,
             create_event.vrc_event_id,
+            create_event.vrc_group_id,
             create_event.name,
             create_event.description,
             create_event.starts_at,
@@ -129,17 +124,16 @@ impl EventModel for PostgresDatabase {
         .execute(&self.pool)
         .await?;
 
-        Ok(CreatedEvent { event_id: id })
+        Ok(CreatedEvent { vrc_event_id: create_event.vrc_event_id })
     }
 
-    async fn update_event(&self, id: Uuid, create_event: CreateEvent) -> Result<(), sqlx::Error> {
+    async fn update_event(&self, id: &str, create_event: CreateEvent) -> Result<(), sqlx::Error> {
         sqlx::query!(
             r#"UPDATE events SET
-              vrc_event_id = $2, name = $3, description = $4, starts_at = $5, ends_at = $6, category = $7, access_type = $8, platforms = $9, image_url = $10, tags = $11
+              name = $2, description = $3, starts_at = $4, ends_at = $5, category = $6, access_type = $7, platforms = $8, image_url = $9, tags = $10
             WHERE
-              id = $1"#,
+              vrc_event_id = $1"#,
             id,
-            create_event.vrc_event_id,
             create_event.name,
             create_event.description,
             create_event.starts_at,
@@ -156,8 +150,8 @@ impl EventModel for PostgresDatabase {
         Ok(())
     }
 
-    async fn delete_event(&self, id: Uuid) -> Result<(), sqlx::Error> {
-        sqlx::query!("DELETE FROM events WHERE id = $1", id)
+    async fn delete_event(&self, id: &str) -> Result<(), sqlx::Error> {
+        sqlx::query!("DELETE FROM events WHERE vrc_event_id = $1", id)
             .execute(&self.pool)
             .await?;
 
