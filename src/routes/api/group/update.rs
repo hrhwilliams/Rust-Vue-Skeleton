@@ -5,7 +5,6 @@ use axum::{
     extract::{Path, State},
     response::IntoResponse,
 };
-use uuid::Uuid;
 
 use crate::{
     app::AppState,
@@ -17,14 +16,14 @@ use crate::{
 pub async fn update_group(
     AuthenticatedApiUser(_user_agent): AuthenticatedApiUser,
     State(app_state): State<AppState>,
-    Path(path): Path<HashMap<String, Uuid>>,
+    Path(path): Path<HashMap<String, String>>,
     Json(create_group): Json<CreateGroup>,
 ) -> Result<impl IntoResponse, ApiError> {
     let id = path.get("id").ok_or(ApiError::BadRequest)?;
 
     app_state
         .db
-        .update_group(*id, create_group)
+        .update_group(id, create_group)
         .await
         .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
 

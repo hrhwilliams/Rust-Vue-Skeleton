@@ -11,30 +11,60 @@
       {
         "ordinal": 1,
         "name": "group_id",
-        "type_info": "Uuid"
+        "type_info": "Text"
       },
       {
         "ordinal": 2,
-        "name": "name",
+        "name": "vrc_event_id",
         "type_info": "Text"
       },
       {
         "ordinal": 3,
-        "name": "description",
+        "name": "name",
         "type_info": "Text"
       },
       {
         "ordinal": 4,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
         "name": "starts_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 5,
+        "ordinal": 6,
         "name": "ends_at",
         "type_info": "Timestamptz"
       },
       {
-        "ordinal": 6,
+        "ordinal": 7,
+        "name": "category",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "access_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "platforms",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 10,
+        "name": "image_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 11,
+        "name": "tags",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 12,
         "name": "created_at",
         "type_info": "Timestamptz"
       }
@@ -49,6 +79,12 @@
       false,
       false,
       false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
       false
     ]
   },

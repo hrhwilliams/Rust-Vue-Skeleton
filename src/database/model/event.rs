@@ -11,26 +11,38 @@ use crate::database::PostgresDatabase;
 #[derive(Serialize, FromRow)]
 pub struct Event {
     pub id: Uuid,
-    pub group_id: Uuid,
+    pub vrc_event_id: String,
+    pub group_id: String,
     pub name: String,
     pub description: String,
     #[serde(with = "time::serde::rfc3339")]
     pub starts_at: OffsetDateTime,
     #[serde(with = "time::serde::rfc3339")]
     pub ends_at: OffsetDateTime,
+    pub category: String,
+    pub access_type: String,
+    pub platforms: Vec<String>,
+    pub image_url: Option<String>,
+    pub tags: Option<Vec<String>>,
     #[serde(with = "time::serde::rfc3339")]
     pub created_at: OffsetDateTime,
 }
 
 #[derive(Deserialize)]
 pub struct CreateEvent {
-    pub group_id: Uuid,
+    pub group_id: String,
+    pub vrc_event_id: String,
     pub name: String,
     pub description: String,
     #[serde(with = "time::serde::rfc3339")]
     pub starts_at: OffsetDateTime,
     #[serde(with = "time::serde::rfc3339")]
     pub ends_at: OffsetDateTime,
+    pub category: String,
+    pub access_type: String,
+    pub platforms: Vec<String>,
+    pub image_url: Option<String>,
+    pub tags: Option<Vec<String>>,
 }
 
 #[derive(Serialize)]
@@ -98,15 +110,21 @@ impl EventModel for PostgresDatabase {
 
         sqlx::query!(
             r#"INSERT INTO events
-              (id, group_id, name, description, starts_at, ends_at)
+              (id, group_id, vrc_event_id, name, description, starts_at, ends_at, category, access_type, platforms, image_url, tags)
             VALUES
-              ($1, $2, $3, $4, $5, $6)"#,
+              ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"#,
             id,
             create_event.group_id,
+            create_event.vrc_event_id,
             create_event.name,
             create_event.description,
             create_event.starts_at,
             create_event.ends_at,
+            create_event.category,
+            create_event.access_type,
+            &create_event.platforms,
+            create_event.image_url,
+            create_event.tags.as_deref(),
         )
         .execute(&self.pool)
         .await?;
@@ -117,15 +135,20 @@ impl EventModel for PostgresDatabase {
     async fn update_event(&self, id: Uuid, create_event: CreateEvent) -> Result<(), sqlx::Error> {
         sqlx::query!(
             r#"UPDATE events SET
-              group_id = $2, name = $3, description = $4, starts_at = $5, ends_at = $6
+              vrc_event_id = $2, name = $3, description = $4, starts_at = $5, ends_at = $6, category = $7, access_type = $8, platforms = $9, image_url = $10, tags = $11
             WHERE
               id = $1"#,
             id,
-            create_event.group_id,
+            create_event.vrc_event_id,
             create_event.name,
             create_event.description,
             create_event.starts_at,
             create_event.ends_at,
+            create_event.category,
+            create_event.access_type,
+            &create_event.platforms,
+            create_event.image_url,
+            create_event.tags.as_deref(),
         )
         .execute(&self.pool)
         .await?;
