@@ -124,7 +124,9 @@ impl EventModel for PostgresDatabase {
         .execute(&self.pool)
         .await?;
 
-        Ok(CreatedEvent { vrc_event_id: create_event.vrc_event_id })
+        Ok(CreatedEvent {
+            vrc_event_id: create_event.vrc_event_id,
+        })
     }
 
     async fn update_event(&self, id: &str, create_event: CreateEvent) -> Result<(), sqlx::Error> {

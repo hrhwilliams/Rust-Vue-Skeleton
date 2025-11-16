@@ -2,7 +2,7 @@
 create table events(
     vrc_event_id text primary key,
     vrc_group_id text not null references groups(vrc_group_id) on delete cascade,
-    name text unique not null,
+    name text not null,
     description text not null,
     starts_at timestamptz not null,
     ends_at timestamptz not null,

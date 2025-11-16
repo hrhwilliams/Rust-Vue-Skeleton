@@ -81,9 +81,13 @@ impl GroupModel for PostgresDatabase {
     }
 
     async fn update_group(&self, id: &str, create_group: CreateGroup) -> Result<(), sqlx::Error> {
-        sqlx::query!("UPDATE groups SET name = $2 WHERE vrc_group_id = $1", id, create_group.name)
-            .execute(&self.pool)
-            .await?;
+        sqlx::query!(
+            "UPDATE groups SET name = $2 WHERE vrc_group_id = $1",
+            id,
+            create_group.name
+        )
+        .execute(&self.pool)
+        .await?;
 
         Ok(())
     }
