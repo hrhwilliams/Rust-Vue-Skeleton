@@ -31,7 +31,14 @@ export default defineComponent({
   name: 'App',
   components: { FullCalendar },
   setup() {
-    const activeEvent = ref<{ id: string; title: string; group: string; description: string } | null>(null)
+    const activeEvent = ref<{
+      id: string
+      title: string
+      group: string
+      description: string
+      startsAt: string
+      endsAt: string
+    } | null>(null)
     const isPopoverOpen = ref(false)
     const popoverPosition = ref<{ top: number; left: number } | null>(null)
     const popoverRef = ref<HTMLElement | null>(null)
@@ -50,6 +57,14 @@ export default defineComponent({
       }
     }
 
+    function formatLocal(date: Date | null): string {
+      if (!date) return 'Unknown time'
+      return date.toLocaleString(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      })
+    }
+
     async function handleEventClick(info: EventClickArg) {
       info.jsEvent?.preventDefault()
       info.jsEvent?.stopPropagation()
@@ -60,6 +75,8 @@ export default defineComponent({
         group: groupName,
         title: info.event.title || 'Untitled event',
         description: props?.description ?? '',
+        startsAt: formatLocal(info.event.start),
+        endsAt: formatLocal(info.event.end ?? info.event.start),
       }
       const pageX = info.jsEvent?.pageX ?? 0
       const pageY = info.jsEvent?.pageY ?? 0
@@ -139,6 +156,10 @@ export default defineComponent({
         <button type="button" class="close-btn" @click="closePopover">×</button>
       </header>
       <p class="event-popover__description">{{ activeEvent.description || 'No description provided.' }}</p>
+      <ul class="event-popover__times">
+        <li><strong>Starts:</strong> {{ activeEvent.startsAt }}</li>
+        <li><strong>Ends:</strong> {{ activeEvent.endsAt }}</li>
+      </ul>
     </div>
   </section>
 </template>
@@ -174,6 +195,16 @@ export default defineComponent({
 
 .event-popover__description {
   margin: 0;
+}
+
+.event-popover__times {
+  padding-left: 1rem;
+  margin: 0.5rem 0 0;
+  list-style: none;
+}
+
+.event-popover__times li + li {
+  margin-top: 0.25rem;
 }
 
 .close-btn {
