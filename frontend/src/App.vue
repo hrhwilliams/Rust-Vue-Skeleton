@@ -6,17 +6,23 @@ import interactionPlugin from '@fullcalendar/interaction'
 import type { CalendarOptions, EventInput, EventClickArg } from '@fullcalendar/core'
 
 import { fetchEvents } from '@/api/events'
+import { getGroup } from '@/api/groups'
 import type { ApiEvent } from '@/types/event'
+
+type EventExtendedProps = {
+  description?: string
+  vrc_group_id?: string
+}
 
 function toCalendarEvents(events: ApiEvent[]): EventInput[] {
   return events.map(evt => ({
-    id: evt.id,
+    id: evt.vrc_event_id,
     title: evt.name,
     start: evt.starts_at,
     end: evt.ends_at,
     extendedProps: {
       description: evt.description,
-      groupId: evt.group_id,
+      vrc_group_id: evt.vrc_group_id,
     },
   }))
 }
@@ -25,17 +31,33 @@ export default defineComponent({
   name: 'App',
   components: { FullCalendar },
   setup() {
-    const activeEvent = ref<{ id: string; title: string; description: string } | null>(null)
+    const activeEvent = ref<{ id: string; title: string; group: string; description: string } | null>(null)
     const isPopoverOpen = ref(false)
     const popoverPosition = ref<{ top: number; left: number } | null>(null)
     const popoverRef = ref<HTMLElement | null>(null)
+    const groupNameCache = new Map<string, string>()
 
-    function handleEventClick(info: EventClickArg) {
+    async function resolveGroupName(groupId?: string) {
+      if (!groupId) return 'Unknown group'
+      if (groupNameCache.has(groupId)) return groupNameCache.get(groupId) as string
+      try {
+        const group = await getGroup(groupId)
+        groupNameCache.set(groupId, group.name)
+        return group.name
+      } catch (error) {
+        console.error('Failed to load group info', error)
+        return 'Unknown group'
+      }
+    }
+
+    async function handleEventClick(info: EventClickArg) {
       info.jsEvent?.preventDefault()
       info.jsEvent?.stopPropagation()
-      const props = info.event.extendedProps as { description?: string } | undefined
+      const props = info.event.extendedProps as EventExtendedProps | undefined
+      const groupName = await resolveGroupName(props?.vrc_group_id)
       activeEvent.value = {
         id: info.event.id,
+        group: groupName,
         title: info.event.title || 'Untitled event',
         description: props?.description ?? '',
       }
@@ -110,11 +132,13 @@ export default defineComponent({
       ref="popoverRef"
     >
       <header>
-        <strong>{{ activeEvent.title }}</strong>
+        <div class="event-popover__titles">
+          <strong>{{ activeEvent.title }}</strong>
+          <small class="event-popover__group">{{ activeEvent.group }}</small>
+        </div>
         <button type="button" class="close-btn" @click="closePopover">×</button>
       </header>
-      <p>{{ activeEvent.id }}</p>
-      <p>{{ activeEvent.description || 'No description provided.' }}</p>
+      <p class="event-popover__description">{{ activeEvent.description || 'No description provided.' }}</p>
     </div>
   </section>
 </template>
@@ -137,6 +161,19 @@ export default defineComponent({
   justify-content: space-between;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+}
+
+.event-popover__titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.event-popover__group {
+  color: #555;
+}
+
+.event-popover__description {
+  margin: 0;
 }
 
 .close-btn {
