@@ -14,6 +14,7 @@ pub enum ApiError {
     BadRequest,
     DatabaseError(String),
     NotFound,
+    Unauthorized,
 }
 
 impl IntoResponse for ApiError {
@@ -41,6 +42,13 @@ impl From<ApiError> for Response {
                 StatusCode::NOT_FOUND,
                 Json(ApiErrorResponse {
                     message: "resource not found".to_string(),
+                }),
+            )
+                .into_response(),
+            ApiError::Unauthorized => (
+                StatusCode::UNAUTHORIZED,
+                Json(ApiErrorResponse {
+                    message: "you are not authorized to access this content".to_string(),
                 }),
             )
                 .into_response(),

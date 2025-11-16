@@ -4,10 +4,12 @@ use crate::{
     app::AppState,
     database::{CreateEvent, EventModel},
     errors::ApiError,
+    extractors::AuthenticatedApiUser,
 };
 
 #[axum::debug_handler]
 pub async fn insert_event(
+    AuthenticatedApiUser(_user_agent): AuthenticatedApiUser,
     State(app_state): State<AppState>,
     Json(create_event): Json<CreateEvent>,
 ) -> Result<impl IntoResponse, ApiError> {

@@ -7,7 +7,11 @@ use axum::{
 };
 use uuid::Uuid;
 
-use crate::{app::AppState, database::{Event, EventModel}, errors::ApiError};
+use crate::{
+    app::AppState,
+    database::{Event, EventModel},
+    errors::ApiError,
+};
 
 pub async fn get_all_events(
     State(app_state): State<AppState>,

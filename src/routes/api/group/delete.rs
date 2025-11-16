@@ -6,9 +6,10 @@ use axum::{
 };
 use uuid::Uuid;
 
-use crate::{app::AppState, database::GroupModel, errors::ApiError};
+use crate::{app::AppState, database::GroupModel, errors::ApiError, extractors::AuthenticatedApiUser};
 
 pub async fn delete_group(
+    AuthenticatedApiUser(_user_agent): AuthenticatedApiUser,
     State(app_state): State<AppState>,
     Path(path): Path<HashMap<String, Uuid>>,
 ) -> Result<impl IntoResponse, ApiError> {

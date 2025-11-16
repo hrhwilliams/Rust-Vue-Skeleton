@@ -9,10 +9,13 @@ use uuid::Uuid;
 
 use crate::{
     app::AppState,
-    database::{CreateGroup, GroupModel}, errors::ApiError,
+    database::{CreateGroup, GroupModel},
+    errors::ApiError,
+    extractors::AuthenticatedApiUser,
 };
 
 pub async fn update_group(
+    AuthenticatedApiUser(_user_agent): AuthenticatedApiUser,
     State(app_state): State<AppState>,
     Path(path): Path<HashMap<String, Uuid>>,
     Json(create_group): Json<CreateGroup>,

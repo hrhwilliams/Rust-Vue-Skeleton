@@ -48,6 +48,8 @@ services:
       - .env
     environment:
       DATABASE_URL: "postgres://${DB_USER}:${DB_PASS}@database:${DB_PORT}/${DB_NAME}"
+    ports:
+      - ${APP_PORT}:${APP_PORT}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${APP_PORT}"]
       interval: 1m

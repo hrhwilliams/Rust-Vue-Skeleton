@@ -2,10 +2,13 @@ use axum::{Json, extract::State, response::IntoResponse};
 
 use crate::{
     app::AppState,
-    database::{CreateGroup, GroupModel}, errors::ApiError,
+    database::{CreateGroup, GroupModel},
+    errors::ApiError,
+    extractors::AuthenticatedApiUser,
 };
 
 pub async fn insert_group(
+    AuthenticatedApiUser(_user_agent): AuthenticatedApiUser,
     State(app_state): State<AppState>,
     Json(create_group): Json<CreateGroup>,
 ) -> Result<impl IntoResponse, ApiError> {

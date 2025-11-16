@@ -7,7 +7,11 @@ use axum::{
 };
 use uuid::Uuid;
 
-use crate::{app::AppState, database::{GroupModel, Group}, errors::ApiError};
+use crate::{
+    app::AppState,
+    database::{Group, GroupModel},
+    errors::ApiError,
+};
 
 pub async fn get_all_groups(
     State(app_state): State<AppState>,

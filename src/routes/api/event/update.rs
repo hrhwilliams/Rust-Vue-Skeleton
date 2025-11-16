@@ -11,9 +11,11 @@ use crate::{
     app::AppState,
     database::{CreateEvent, EventModel},
     errors::ApiError,
+    extractors::AuthenticatedApiUser,
 };
 
 pub async fn update_event(
+    AuthenticatedApiUser(_user_agent): AuthenticatedApiUser,
     State(app_state): State<AppState>,
     Path(path): Path<HashMap<String, Uuid>>,
     Json(create_event): Json<CreateEvent>,
