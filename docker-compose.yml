@@ -28,6 +28,8 @@ services:
       - ./config/ssl:/etc/ssl/certs:ro
     networks:
       - calendar-network
+    depends_on:
+      - app
 
   tunnel:
     image: cloudflare/cloudflared
@@ -52,7 +54,7 @@ services:
       - ${APP_PORT}:${APP_PORT}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:${APP_PORT}"]
-      interval: 1m
+      interval: 30s
       timeout: 10s
       retries: 5
     depends_on:

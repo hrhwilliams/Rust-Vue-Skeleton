@@ -26,6 +26,7 @@ RUN cargo build --release
 
 FROM alpine:3.22 AS runtime
 WORKDIR /app
+RUN apk add curl
 COPY --from=backend-builder /build/frontend/dist /app/frontend/dist
 COPY --from=backend-builder /build/target/release/rust-vue-skeleton rust-vue-skeleton
 COPY --from=backend-builder /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx

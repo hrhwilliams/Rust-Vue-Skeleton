@@ -17,7 +17,7 @@ pub async fn get_all_events(
     State(app_state): State<AppState>,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let events: Vec<Event> = if query.is_empty() {
+    let events = if query.is_empty() {
         app_state
             .db
             .get_all_events()
