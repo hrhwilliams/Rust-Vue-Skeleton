@@ -15,11 +15,7 @@ pub async fn delete_group(
 ) -> Result<impl IntoResponse, ApiError> {
     let id = path.get("id").ok_or(ApiError::BadRequest)?;
 
-    app_state
-        .db
-        .delete_group(id)
-        .await
-        .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
+    app_state.db.delete_group(id).await?;
 
     Ok(())
 }

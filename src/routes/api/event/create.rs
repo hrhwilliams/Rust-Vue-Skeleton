@@ -17,7 +17,7 @@ pub async fn insert_event(
         .db
         .insert_event(create_event)
         .await
-        .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
+        .map_err(ApiError::from)?;
 
     Ok(Json(created_event))
 }

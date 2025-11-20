@@ -13,11 +13,7 @@ pub async fn insert_group(
     State(app_state): State<AppState>,
     Json(create_group): Json<CreateGroup>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let created_group = app_state
-        .db
-        .insert_group(create_group)
-        .await
-        .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
+    let created_group = app_state.db.insert_group(create_group).await?;
 
     Ok(Json(created_group))
 }

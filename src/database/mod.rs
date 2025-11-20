@@ -1,7 +1,9 @@
+mod errors;
 mod model;
 
 use std::sync::{Arc, atomic::AtomicBool};
 
+pub use errors::*;
 pub use model::*;
 
 use sqlx::PgPool;

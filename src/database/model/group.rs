@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::{QueryBuilder, prelude::FromRow};
 use time::OffsetDateTime;
 
-use crate::database::PostgresDatabase;
+use crate::database::{DatabaseError, PostgresDatabase};
 
 #[derive(Serialize, FromRow)]
 pub struct Group {
@@ -28,17 +28,17 @@ pub struct CreatedGroup {
 
 #[async_trait]
 pub trait GroupModel {
-    async fn get_all_groups(&self) -> Result<Vec<Group>, sqlx::Error>;
-    async fn query_groups(&self, query: HashMap<String, String>) -> Result<Vec<Group>, sqlx::Error>;
-    async fn get_group(&self, id: &str) -> Result<Option<Group>, sqlx::Error>;
-    async fn insert_group(&self, create_group: CreateGroup) -> Result<CreatedGroup, sqlx::Error>;
-    async fn update_group(&self, id: &str, create_group: CreateGroup) -> Result<(), sqlx::Error>;
-    async fn delete_group(&self, id: &str) -> Result<(), sqlx::Error>;
+    async fn get_all_groups(&self) -> Result<Vec<Group>, DatabaseError>;
+    async fn query_groups(&self, query: HashMap<String, String>) -> Result<Vec<Group>, DatabaseError>;
+    async fn get_group(&self, id: &str) -> Result<Option<Group>, DatabaseError>;
+    async fn insert_group(&self, create_group: CreateGroup) -> Result<CreatedGroup, DatabaseError>;
+    async fn update_group(&self, id: &str, create_group: CreateGroup) -> Result<(), DatabaseError>;
+    async fn delete_group(&self, id: &str) -> Result<(), DatabaseError>;
 }
 
 #[async_trait]
 impl GroupModel for PostgresDatabase {
-    async fn get_all_groups(&self) -> Result<Vec<Group>, sqlx::Error> {
+    async fn get_all_groups(&self) -> Result<Vec<Group>, DatabaseError> {
         let groups = sqlx::query_as!(Group, "SELECT * FROM groups")
             .fetch_all(&self.pool)
             .await?;
@@ -46,7 +46,7 @@ impl GroupModel for PostgresDatabase {
         Ok(groups)
     }
 
-    async fn query_groups(&self, query: HashMap<String, String>) -> Result<Vec<Group>, sqlx::Error> {
+    async fn query_groups(&self, query: HashMap<String, String>) -> Result<Vec<Group>, DatabaseError> {
         let mut query_builder = QueryBuilder::new("SELECT * FROM groups WHERE 1=1");
 
         if let Some(name) = query.get("name") {
@@ -58,7 +58,7 @@ impl GroupModel for PostgresDatabase {
         Ok(query.fetch_all(&self.pool).await?)
     }
 
-    async fn get_group(&self, id: &str) -> Result<Option<Group>, sqlx::Error> {
+    async fn get_group(&self, id: &str) -> Result<Option<Group>, DatabaseError> {
         let group = sqlx::query_as!(Group, "SELECT * FROM groups WHERE vrc_group_id = $1", id)
             .fetch_optional(&self.pool)
             .await?;
@@ -66,7 +66,7 @@ impl GroupModel for PostgresDatabase {
         Ok(group)
     }
 
-    async fn insert_group(&self, create_group: CreateGroup) -> Result<CreatedGroup, sqlx::Error> {
+    async fn insert_group(&self, create_group: CreateGroup) -> Result<CreatedGroup, DatabaseError> {
         sqlx::query!(
             "INSERT INTO groups (vrc_group_id, name) VALUES ($1, $2)",
             create_group.vrc_group_id,
@@ -80,7 +80,7 @@ impl GroupModel for PostgresDatabase {
         })
     }
 
-    async fn update_group(&self, id: &str, create_group: CreateGroup) -> Result<(), sqlx::Error> {
+    async fn update_group(&self, id: &str, create_group: CreateGroup) -> Result<(), DatabaseError> {
         sqlx::query!(
             "UPDATE groups SET name = $2 WHERE vrc_group_id = $1",
             id,
@@ -92,7 +92,7 @@ impl GroupModel for PostgresDatabase {
         Ok(())
     }
 
-    async fn delete_group(&self, id: &str) -> Result<(), sqlx::Error> {
+    async fn delete_group(&self, id: &str) -> Result<(), DatabaseError> {
         sqlx::query!("DELETE FROM groups WHERE vrc_group_id = $1", id)
             .execute(&self.pool)
             .await?;

@@ -26,7 +26,9 @@ pub async fn redirect(
         .map_err(|e| WebError::InternalServerError(e.to_string()))?
         .ok_or_else(|| WebError::InternalServerError("missing csrf_token".to_string()))?;
 
-    assert_eq!(state, &csrf_token);
+    if state != &csrf_token {
+        return Err(WebError::InternalServerError("state and csrf token do not match".to_string()));
+    }
 
     let pkce_verifier = session
         .get::<PkceCodeVerifier>("verifier")
@@ -40,6 +42,8 @@ pub async fn redirect(
         )
         .await?;
 
+    session.remove("csrf_token").await?;
+    session.remove("verifier").await?;
     session.set("token", token).await?;
 
     Ok(Redirect::to("/"))

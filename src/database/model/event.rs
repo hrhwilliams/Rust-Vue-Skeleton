@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::{QueryBuilder, prelude::FromRow};
 use time::{OffsetDateTime, format_description::well_known::Rfc3339};
 
-use crate::database::PostgresDatabase;
+use crate::database::{DatabaseError, PostgresDatabase};
 
 #[derive(Serialize, FromRow)]
 pub struct Event {
@@ -53,17 +53,17 @@ pub struct CreatedEvent {
 
 #[async_trait]
 pub trait EventModel {
-    async fn get_all_events(&self) -> Result<Arc<[Event]>, sqlx::Error>;
-    async fn query_events(&self, query: HashMap<String, String>) -> Result<Arc<[Event]>, sqlx::Error>;
-    async fn get_event(&self, id: &str) -> Result<Option<Event>, sqlx::Error>;
-    async fn insert_event(&self, create_event: CreateEvent) -> Result<CreatedEvent, sqlx::Error>;
-    async fn update_event(&self, id: &str, create_event: CreateEvent) -> Result<(), sqlx::Error>;
-    async fn delete_event(&self, id: &str) -> Result<(), sqlx::Error>;
+    async fn get_all_events(&self) -> Result<Arc<[Event]>, DatabaseError>;
+    async fn query_events(&self, query: HashMap<String, String>) -> Result<Arc<[Event]>, DatabaseError>;
+    async fn get_event(&self, id: &str) -> Result<Option<Event>, DatabaseError>;
+    async fn insert_event(&self, create_event: CreateEvent) -> Result<CreatedEvent, DatabaseError>;
+    async fn update_event(&self, id: &str, create_event: CreateEvent) -> Result<(), DatabaseError>;
+    async fn delete_event(&self, id: &str) -> Result<(), DatabaseError>;
 }
 
 #[async_trait]
 impl EventModel for PostgresDatabase {
-    async fn get_all_events(&self) -> Result<Arc<[Event]>, sqlx::Error> {
+    async fn get_all_events(&self) -> Result<Arc<[Event]>, DatabaseError> {
         if self.dirty.swap(false, Ordering::Acquire) {
             let mut cache = self.event_cache.write().await;
             *cache = sqlx::query_as!(Event, "SELECT * FROM events")
@@ -82,7 +82,7 @@ impl EventModel for PostgresDatabase {
         }
     }
 
-    async fn query_events(&self, query: HashMap<String, String>) -> Result<Arc<[Event]>, sqlx::Error> {
+    async fn query_events(&self, query: HashMap<String, String>) -> Result<Arc<[Event]>, DatabaseError> {
         let mut query_builder = QueryBuilder::new("SELECT * FROM events WHERE 1=1");
 
         if let Some(starts_at_str) = query.get("starts_at") {
@@ -109,7 +109,7 @@ impl EventModel for PostgresDatabase {
         Ok(query.into_boxed_slice().into())
     }
 
-    async fn get_event(&self, id: &str) -> Result<Option<Event>, sqlx::Error> {
+    async fn get_event(&self, id: &str) -> Result<Option<Event>, DatabaseError> {
         let event = sqlx::query_as!(Event, "SELECT * FROM events WHERE vrc_event_id = $1", id)
             .fetch_optional(&self.pool)
             .await?;
@@ -117,7 +117,7 @@ impl EventModel for PostgresDatabase {
         Ok(event)
     }
 
-    async fn insert_event(&self, create_event: CreateEvent) -> Result<CreatedEvent, sqlx::Error> {
+    async fn insert_event(&self, create_event: CreateEvent) -> Result<CreatedEvent, DatabaseError> {
         self.dirty.swap(true, Ordering::Acquire);
 
         sqlx::query!(
@@ -145,7 +145,7 @@ impl EventModel for PostgresDatabase {
         })
     }
 
-    async fn update_event(&self, id: &str, create_event: CreateEvent) -> Result<(), sqlx::Error> {
+    async fn update_event(&self, id: &str, create_event: CreateEvent) -> Result<(), DatabaseError> {
         self.dirty.swap(true, Ordering::Acquire);
 
         sqlx::query!(
@@ -170,7 +170,7 @@ impl EventModel for PostgresDatabase {
         Ok(())
     }
 
-    async fn delete_event(&self, id: &str) -> Result<(), sqlx::Error> {
+    async fn delete_event(&self, id: &str) -> Result<(), DatabaseError> {
         self.dirty.swap(true, Ordering::Acquire);
 
         sqlx::query!("DELETE FROM events WHERE vrc_event_id = $1", id)

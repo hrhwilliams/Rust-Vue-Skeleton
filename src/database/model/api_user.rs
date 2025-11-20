@@ -3,7 +3,7 @@ use serde::Serialize;
 use sqlx::prelude::FromRow;
 use time::OffsetDateTime;
 
-use crate::database::PostgresDatabase;
+use crate::database::{DatabaseError, PostgresDatabase};
 
 #[derive(Serialize, FromRow)]
 pub struct ApiUser {
@@ -15,12 +15,12 @@ pub struct ApiUser {
 
 #[async_trait]
 pub trait ApiUserModel {
-    async fn validate_api_key(&self, api_key: &str) -> Result<bool, sqlx::Error>;
+    async fn validate_api_key(&self, api_key: &str) -> Result<bool, DatabaseError>;
 }
 
 #[async_trait]
 impl ApiUserModel for PostgresDatabase {
-    async fn validate_api_key(&self, api_key: &str) -> Result<bool, sqlx::Error> {
+    async fn validate_api_key(&self, api_key: &str) -> Result<bool, DatabaseError> {
         let user_maybe = sqlx::query_as!(ApiUser, "SELECT * FROM api_users WHERE api_key = $1", api_key)
             .fetch_optional(&self.pool)
             .await?;

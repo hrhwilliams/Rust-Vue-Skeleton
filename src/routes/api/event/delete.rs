@@ -15,11 +15,7 @@ pub async fn delete_event(
 ) -> Result<impl IntoResponse, ApiError> {
     let id = path.get("id").ok_or(ApiError::BadRequest)?;
 
-    app_state
-        .db
-        .delete_event(id)
-        .await
-        .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
+    app_state.db.delete_event(id).await?;
 
     Ok(())
 }

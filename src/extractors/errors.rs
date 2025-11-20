@@ -9,7 +9,7 @@ pub enum AuthError {
     MissingApiKey,
     MissingUserAgent,
     InvalidCredentials,
-    DatabaseError(String),
+    DatabaseError(DatabaseError),
 }
 
 impl From<AuthError> for ApiError {
@@ -18,7 +18,7 @@ impl From<AuthError> for ApiError {
             AuthError::MissingApiKey => ApiError::Unauthorized(Some("missing API key header".to_string())),
             AuthError::MissingUserAgent => ApiError::Unauthorized(Some("missing user agent header".to_string())),
             AuthError::InvalidCredentials => ApiError::Unauthorized(Some("API key was invalid".to_string())),
-            AuthError::DatabaseError(s) => ApiError::DatabaseError(s),
+            AuthError::DatabaseError(e) => ApiError::from(e),
         }
     }
 }
@@ -50,7 +50,7 @@ impl From<SessionError> for ApiError {
         match value {
             SessionError::ExtractError => ApiError::Unauthorized(Some("failed to read cookies".to_string())),
             SessionError::NoSession => ApiError::Unauthorized(Some("no session".to_string())),
-            SessionError::DatabaseError(_e) => ApiError::DatabaseError("database error".to_string()),
+            SessionError::DatabaseError(e) => ApiError::from(e),
         }
     }
 }

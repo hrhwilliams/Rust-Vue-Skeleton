@@ -22,11 +22,7 @@ pub async fn update_event(
 ) -> Result<impl IntoResponse, ApiError> {
     let id = path.get("id").ok_or(ApiError::BadRequest)?;
 
-    app_state
-        .db
-        .update_event(id, create_event)
-        .await
-        .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
+    app_state.db.update_event(id, create_event).await?;
 
     Ok(())
 }

@@ -22,11 +22,7 @@ pub async fn update_group(
 ) -> Result<impl IntoResponse, ApiError> {
     let id = path.get("id").ok_or(ApiError::BadRequest)?;
 
-    app_state
-        .db
-        .update_group(id, create_group)
-        .await
-        .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
+    app_state.db.update_group(id, create_group).await?;
 
     Ok(())
 }

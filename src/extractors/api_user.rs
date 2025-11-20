@@ -30,7 +30,7 @@ impl FromRequestParts<AppState> for AuthenticatedApiUser {
             .db
             .validate_api_key(api_key)
             .await
-            .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+            .map_err(AuthError::DatabaseError)?;
         // .ok_or(ApiError::from(AuthError::InvalidCredentials))
         // .inspect_err(|_| {
         //     tracing::info!("Login attempt by IP: '{}' via User-Agent '{}'", ip, user_agent);

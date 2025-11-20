@@ -5,7 +5,7 @@ use axum::{
 };
 use serde::Serialize;
 
-use crate::oauth::OAuthError;
+use crate::{database::DatabaseError, oauth::OAuthError};
 
 #[derive(Serialize)]
 struct ApiErrorResponse<'a> {
@@ -15,7 +15,7 @@ struct ApiErrorResponse<'a> {
 
 pub enum ApiError {
     BadRequest,
-    DatabaseError(String),
+    DatabaseError(DatabaseError),
     OAuthError(String),
     NotFound,
     Unauthorized(Option<String>),
@@ -37,13 +37,29 @@ impl From<ApiError> for Response {
                     detail: None,
                 }),
             ),
-            ApiError::DatabaseError(detail) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(ApiErrorResponse {
-                    message: "database error",
-                    detail: Some(detail),
-                }),
-            ),
+            ApiError::DatabaseError(error) => match error {
+                DatabaseError::RngError => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(ApiErrorResponse {
+                        message: "internal server error",
+                        detail: Some("failed to generate random number".to_string()),
+                    }),
+                ),
+                DatabaseError::SerdeError(e) => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(ApiErrorResponse {
+                        message: "serialization error",
+                        detail: Some(e.to_string()),
+                    }),
+                ),
+                DatabaseError::SqlxError(e) => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(ApiErrorResponse {
+                        message: "database error",
+                        detail: Some(e.to_string()),
+                    }),
+                ),
+            },
             ApiError::OAuthError(detail) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(ApiErrorResponse {
@@ -79,5 +95,11 @@ impl From<OAuthError> for ApiError {
             OAuthError::FailedToGetToken(reason) => ApiError::OAuthError(reason),
             OAuthError::FailedQuery => ApiError::OAuthError("failed to query with token".to_string()),
         }
+    }
+}
+
+impl From<DatabaseError> for ApiError {
+    fn from(value: DatabaseError) -> Self {
+        Self::DatabaseError(value)
     }
 }

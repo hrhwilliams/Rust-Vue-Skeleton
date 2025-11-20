@@ -18,17 +18,9 @@ pub async fn get_all_groups(
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, ApiError> {
     let groups: Vec<Group> = if query.is_empty() {
-        app_state
-            .db
-            .get_all_groups()
-            .await
-            .map_err(|e| ApiError::DatabaseError(e.to_string()))
+        app_state.db.get_all_groups().await
     } else {
-        app_state
-            .db
-            .query_groups(query)
-            .await
-            .map_err(|e| ApiError::DatabaseError(e.to_string()))
+        app_state.db.query_groups(query).await
     }?;
 
     Ok(Json(groups))
@@ -41,12 +33,7 @@ pub async fn view_group(
 ) -> Result<impl IntoResponse, ApiError> {
     let id = path.get("id").ok_or(ApiError::BadRequest)?;
 
-    let group: Group = app_state
-        .db
-        .get_group(id)
-        .await
-        .map_err(|e| ApiError::DatabaseError(e.to_string()))?
-        .ok_or(ApiError::NotFound)?;
+    let group: Group = app_state.db.get_group(id).await?.ok_or(ApiError::NotFound)?;
 
     Ok(Json(group))
 }
