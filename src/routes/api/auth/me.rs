@@ -7,7 +7,7 @@ pub(crate) async fn me(State(app_state): State<AppState>, session: Session) -> R
     let token = session
         .get("token")
         .map_err(|_| ApiError::BadRequest)?
-        .ok_or(ApiError::BadRequest)?;
+        .ok_or(ApiError::Unauthorized(None))?;
     let info = app_state.oauth.get_discord_info(&token).await?;
 
     Ok(Json(info))
