@@ -5,7 +5,7 @@ use axum::{
     response::IntoResponse,
 };
 
-use crate::{app::AppState, database::EventModel, errors::ApiError, extractors::AuthenticatedApiUser};
+use crate::{app::AppState, database::EventModel, extractors::AuthenticatedApiUser, routes::ApiError};
 
 #[tracing::instrument(skip(app_state))]
 pub async fn delete_event(

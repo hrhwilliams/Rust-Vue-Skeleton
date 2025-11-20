@@ -9,8 +9,8 @@ use axum::{
 use crate::{
     app::AppState,
     database::{CreateEvent, EventModel},
-    errors::ApiError,
     extractors::AuthenticatedApiUser,
+    routes::ApiError,
 };
 
 #[tracing::instrument(skip(app_state))]

@@ -1,6 +1,6 @@
 use std::env;
 
-use rust_vue_skeleton::{app::App, database::PostgresDatabase};
+use rust_vue_skeleton::{app::App, database::PostgresDatabase, oauth::OAuth};
 
 use tokio::net::TcpListener;
 
@@ -28,10 +28,15 @@ async fn main() -> Result<(), std::io::Error> {
     let postgres_url = env::var("DATABASE_URL").unwrap_or(get_db_name());
     let db = PostgresDatabase::new(&postgres_url).await;
 
+    let client_id = env::var("DISCORD_OAUTH_CLIENT_ID").expect("DISCORD_OAUTH_CLIENT_ID not set");
+    let client_secret = env::var("DISCORD_OAUTH_SECRET").expect("DISCORD_OAUTH_SECRET not set");
+    let client_redirect = env::var("DISCORD_OAUTH_REDIRECT").expect("DISCORD_OAUTH_REDIRECT not set");
+    let oauth = OAuth::new(client_id, client_secret, client_redirect);
+
     let listener = TcpListener::bind(("0.0.0.0", port))
         .await
         .expect("Failed to bind to address");
 
-    let app = App::new(db);
+    let app = App::new(db, oauth);
     app.serve(listener).await
 }

@@ -11,7 +11,7 @@ services:
     expose:
       - ${DB_PORT}
     volumes:
-      - pg:/data/postgres
+      - pg_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
@@ -50,13 +50,6 @@ services:
       - .env
     environment:
       DATABASE_URL: "postgres://${DB_USER}:${DB_PASS}@database:${DB_PORT}/${DB_NAME}"
-    ports:
-      - ${APP_PORT}:${APP_PORT}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${APP_PORT}"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
     depends_on:
       database:
         condition: service_healthy
@@ -64,7 +57,7 @@ services:
       - calendar-network
 
 volumes:
-  pg:
+  pg_data:
 networks:
   calendar-network:
     driver: bridge

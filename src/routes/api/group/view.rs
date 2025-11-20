@@ -9,7 +9,7 @@ use axum::{
 use crate::{
     app::AppState,
     database::{Group, GroupModel},
-    errors::ApiError,
+    routes::ApiError,
 };
 
 #[tracing::instrument(skip(app_state))]

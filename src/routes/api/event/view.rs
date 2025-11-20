@@ -9,7 +9,7 @@ use axum::{
 use crate::{
     app::AppState,
     database::{Event, EventModel},
-    errors::ApiError,
+    routes::ApiError,
 };
 
 #[tracing::instrument(skip(app_state))]

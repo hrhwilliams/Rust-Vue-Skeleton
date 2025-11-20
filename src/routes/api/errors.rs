@@ -5,6 +5,8 @@ use axum::{
 };
 use serde::Serialize;
 
+use crate::oauth::OAuthError;
+
 #[derive(Serialize)]
 struct ApiErrorResponse<'a> {
     message: &'a str,
@@ -14,6 +16,7 @@ struct ApiErrorResponse<'a> {
 pub enum ApiError {
     BadRequest,
     DatabaseError(String),
+    OAuthError(String),
     NotFound,
     Unauthorized(Option<String>),
 }
@@ -33,32 +36,48 @@ impl From<ApiError> for Response {
                     message: "the request was malformed",
                     detail: None,
                 }),
-            )
-                .into_response(),
+            ),
             ApiError::DatabaseError(detail) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(ApiErrorResponse {
                     message: "database error",
                     detail: Some(detail),
                 }),
-            )
-                .into_response(),
+            ),
+            ApiError::OAuthError(detail) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ApiErrorResponse {
+                    message: "oauth error",
+                    detail: Some(detail),
+                }),
+            ),
             ApiError::NotFound => (
                 StatusCode::NOT_FOUND,
                 Json(ApiErrorResponse {
                     message: "resource not found",
                     detail: None,
                 }),
-            )
-                .into_response(),
+            ),
             ApiError::Unauthorized(detail) => (
                 StatusCode::UNAUTHORIZED,
                 Json(ApiErrorResponse {
                     message: "you are not authorized to access this content",
                     detail,
                 }),
-            )
-                .into_response(),
+            ),
+        }
+        .into_response()
+    }
+}
+
+impl From<OAuthError> for ApiError {
+    fn from(value: OAuthError) -> Self {
+        match value {
+            OAuthError::FailedToCreateAuthUrl => ApiError::OAuthError("failed to create auth URL".to_string()),
+            OAuthError::FailedToStoreAttempt => ApiError::OAuthError("failed to store OAuth state".to_string()),
+            OAuthError::FailedToRetrieveAttempt => ApiError::OAuthError("failed to retrieve OAuth state".to_string()),
+            OAuthError::FailedToGetToken(reason) => ApiError::OAuthError(reason),
+            OAuthError::FailedQuery => ApiError::OAuthError("failed to query with token".to_string()),
         }
     }
 }

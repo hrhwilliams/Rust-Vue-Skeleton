@@ -2,8 +2,7 @@ use axum::{
     Router,
     body::Body,
     http::{HeaderName, Request},
-    response::{Html, IntoResponse},
-    routing::get,
+    middleware,
 };
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
@@ -16,23 +15,21 @@ use tracing::Level;
 
 use crate::{
     database::PostgresDatabase,
-    routes::{EventRoutes, GroupRoutes},
+    middleware::create_session,
+    oauth::OAuth,
+    routes::{AuthRoutes, EventRoutes, GroupRoutes, WebRoutes},
 };
 
 #[derive(Clone)]
 pub struct AppState {
     pub db: PostgresDatabase,
+    pub oauth: OAuth,
 }
 
 impl AppState {
-    pub fn new(db: PostgresDatabase) -> Self {
-        Self { db }
+    pub fn new(db: PostgresDatabase, oauth: OAuth) -> Self {
+        Self { db, oauth }
     }
-}
-
-/// Passthrough to the Vue app
-async fn vue_passthrough() -> impl IntoResponse {
-    Html(include_str!("../frontend/dist/index.html"))
 }
 
 pub struct App {
@@ -40,14 +37,16 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(db: PostgresDatabase) -> Self {
-        let app_state = AppState::new(db);
+    pub fn new(db: PostgresDatabase, oauth: OAuth) -> Self {
+        let app_state = AppState::new(db, oauth);
         let files = ServeDir::new("./frontend/dist");
 
         let router = Router::new()
+            .merge(WebRoutes::router())
             .nest("/api", EventRoutes::router())
             .nest("/api", GroupRoutes::router())
-            .route("/", get(vue_passthrough))
+            .nest("/api", AuthRoutes::router())
+            .layer(middleware::from_fn_with_state(app_state.clone(), create_session))
             .layer(
                 ServiceBuilder::new()
                     .layer(SetRequestIdLayer::new(

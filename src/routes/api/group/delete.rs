@@ -5,7 +5,7 @@ use axum::{
     response::IntoResponse,
 };
 
-use crate::{app::AppState, database::GroupModel, errors::ApiError, extractors::AuthenticatedApiUser};
+use crate::{app::AppState, database::GroupModel, extractors::AuthenticatedApiUser, routes::ApiError};
 
 #[tracing::instrument(skip(app_state))]
 pub async fn delete_group(

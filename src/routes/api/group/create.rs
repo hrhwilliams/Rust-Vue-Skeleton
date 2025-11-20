@@ -3,8 +3,8 @@ use axum::{Json, extract::State, response::IntoResponse};
 use crate::{
     app::AppState,
     database::{CreateGroup, GroupModel},
-    errors::ApiError,
     extractors::AuthenticatedApiUser,
+    routes::ApiError,
 };
 
 #[tracing::instrument(skip(app_state))]
