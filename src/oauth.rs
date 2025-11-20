@@ -1,6 +1,5 @@
 use oauth2::{
-    AccessToken, AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, PkceCodeVerifier,
-    RedirectUrl, Scope, TokenResponse, TokenUrl, basic::BasicClient,
+    AccessToken, AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, RevocationUrl, Scope, TokenResponse, TokenUrl, basic::BasicClient
 };
 use reqwest;
 use serde::{Deserialize, Serialize};
@@ -8,7 +7,7 @@ use serde::{Deserialize, Serialize};
 const DISCORD_CDN: &str = "http://cdn.discordapp.com";
 const DISCORD_AUTHORIZE_URL: &str = "https://discord.com/oauth2/authorize";
 const DISCORD_TOKEN_URL: &str = "https://discord.com/api/oauth2/token";
-const _DISCORD_TOKEN_REVOKE_URL: &str = "https://discord.com/api/oauth2/token/revoke";
+const DISCORD_TOKEN_REVOKE_URL: &str = "https://discord.com/api/oauth2/token/revoke";
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DiscordInfo {
@@ -62,6 +61,7 @@ impl OAuth {
                 AuthUrl::new(DISCORD_AUTHORIZE_URL.to_string()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?,
             )
             .set_token_uri(TokenUrl::new(DISCORD_TOKEN_URL.to_string()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?)
+            .set_revocation_url(RevocationUrl::new(DISCORD_TOKEN_REVOKE_URL.to_string()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?)
             .set_redirect_uri(
                 RedirectUrl::new(self.client_redirect.clone()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?,
             );
@@ -84,6 +84,7 @@ impl OAuth {
                 AuthUrl::new(DISCORD_AUTHORIZE_URL.to_string()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?,
             )
             .set_token_uri(TokenUrl::new(DISCORD_TOKEN_URL.to_string()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?)
+            .set_revocation_url(RevocationUrl::new(DISCORD_TOKEN_REVOKE_URL.to_string()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?)
             .set_redirect_uri(
                 RedirectUrl::new(self.client_redirect.clone()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?,
             );

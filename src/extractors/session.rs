@@ -58,14 +58,16 @@ impl Session {
         let session_id = jar
             .get("__Host-Http-Session")
             .ok_or_else(|| SessionError::NoSession)?
+            .value()
             .to_string();
 
+        tracing::info!(session_id, "querying for session ID");
         let session_store = state
             .db
             .get_session_store(&session_id)
             .await
             .map_err(SessionError::DatabaseError)?
-            .ok_or_else(|| SessionError::NoSession)?;
+            .ok_or_else(|| SessionError::NoSessionInDatabase)?;
 
         Ok(Self {
             session: session_id,

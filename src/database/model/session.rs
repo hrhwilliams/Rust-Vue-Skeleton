@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use async_trait::async_trait;
-use base64::{Engine, prelude::BASE64_STANDARD};
+use base64::{Engine, prelude::BASE64_URL_SAFE};
 use rand::{TryRngCore, rngs::OsRng};
 use serde::Serialize;
 use serde_json::Value;
@@ -33,7 +33,7 @@ impl SessionModel for PostgresDatabase {
     async fn new_session(&self) -> Result<String, DatabaseError> {
         let mut bytes = [0u8; 33];
         OsRng.try_fill_bytes(&mut bytes).map_err(|_| DatabaseError::RngError)?;
-        let session = BASE64_STANDARD.encode(bytes);
+        let session = BASE64_URL_SAFE.encode(bytes);
 
         let expires = OffsetDateTime::now_utc().checked_add(Duration::days(7));
 

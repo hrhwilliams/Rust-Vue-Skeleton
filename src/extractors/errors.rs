@@ -32,6 +32,7 @@ impl IntoResponse for AuthError {
 pub enum SessionError {
     ExtractError,
     NoSession,
+    NoSessionInDatabase,
     DatabaseError(DatabaseError),
 }
 
@@ -40,6 +41,7 @@ impl From<SessionError> for WebError {
         match value {
             SessionError::ExtractError => WebError::InternalServerError("extract".to_string()),
             SessionError::NoSession => WebError::InternalServerError("no session".to_string()),
+            SessionError::NoSessionInDatabase => WebError::InternalServerError("no session in db".to_string()),
             SessionError::DatabaseError(_e) => WebError::InternalServerError("database error".to_string()),
         }
     }
@@ -50,6 +52,7 @@ impl From<SessionError> for ApiError {
         match value {
             SessionError::ExtractError => ApiError::Unauthorized(Some("failed to read cookies".to_string())),
             SessionError::NoSession => ApiError::Unauthorized(Some("no session".to_string())),
+            SessionError::NoSessionInDatabase => ApiError::Unauthorized(Some("no session in db".to_string())),
             SessionError::DatabaseError(e) => ApiError::from(e),
         }
     }
