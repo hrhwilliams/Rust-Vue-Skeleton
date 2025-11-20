@@ -5,12 +5,12 @@ use axum::{
     response::{IntoResponse, Redirect},
 };
 
-use crate::{app::AppState, extractors::Session, routes::WebError};
+use crate::{app::AppState, extractors::WebSession, routes::WebError};
 
 #[tracing::instrument(skip(app_state, session))]
 pub async fn login(
     State(app_state): State<AppState>,
-    mut session: Session,
+    WebSession(mut session): WebSession,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, WebError> {
     if let Some(invite_code) = query.get("invite") {

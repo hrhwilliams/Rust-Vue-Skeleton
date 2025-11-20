@@ -1,9 +1,12 @@
 use axum::{Json, extract::State, response::IntoResponse};
 
-use crate::{app::AppState, extractors::Session, routes::ApiError};
+use crate::{app::AppState, extractors::ApiSession, routes::ApiError};
 
 #[tracing::instrument(skip(app_state, session))]
-pub(crate) async fn me(State(app_state): State<AppState>, session: Session) -> Result<impl IntoResponse, ApiError> {
+pub(crate) async fn me(
+    State(app_state): State<AppState>,
+    ApiSession(session): ApiSession,
+) -> Result<impl IntoResponse, ApiError> {
     let token = session
         .get("token")
         .map_err(|_| ApiError::BadRequest)?

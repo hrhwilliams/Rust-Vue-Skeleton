@@ -12,6 +12,8 @@ use crate::database::DatabaseError;
 use crate::database::PostgresDatabase;
 use crate::database::SessionModel;
 use crate::extractors::SessionError;
+use crate::routes::ApiError;
+use crate::routes::WebError;
 
 #[derive(Clone)]
 pub struct Session {
@@ -21,14 +23,6 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn new(session: &str, store: HashMap<String, Value>, db: PostgresDatabase) -> Self {
-        Self {
-            session: session.to_string(),
-            store,
-            db,
-        }
-    }
-
     pub fn get<T>(&self, key: &str) -> Result<Option<T>, serde_json::Error>
     where
         T: DeserializeOwned,
@@ -55,12 +49,8 @@ impl Session {
         self.store.remove(key);
         self.db.update_session_store(&self.session, &self.store).await
     }
-}
 
-impl FromRequestParts<AppState> for Session {
-    type Rejection = SessionError;
-
-    async fn from_request_parts(parts: &mut Parts, state: &AppState) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(parts: &mut Parts, state: &AppState) -> Result<Self, SessionError> {
         let jar = CookieJar::from_request_parts(parts, state)
             .await
             .map_err(|_| SessionError::ExtractError)?;
@@ -68,17 +58,43 @@ impl FromRequestParts<AppState> for Session {
         let session_id = jar
             .get("__Host-Http-Session")
             .ok_or_else(|| SessionError::NoSession)?
-            .value();
+            .to_string();
 
         let session_store = state
             .db
-            .get_session_store(session_id)
+            .get_session_store(&session_id)
             .await
             .map_err(SessionError::DatabaseError)?
             .ok_or_else(|| SessionError::NoSession)?;
 
-        let session = Session::new(session_id, session_store, state.db.clone());
+        Ok(Self {
+            session: session_id,
+            store: session_store,
+            db: state.db.clone(),
+        })
+    }
+}
 
-        Ok(session)
+#[derive(Clone)]
+pub struct WebSession(pub Session);
+
+#[derive(Clone)]
+pub struct ApiSession(pub Session);
+
+impl FromRequestParts<AppState> for WebSession {
+    type Rejection = WebError;
+
+    async fn from_request_parts(parts: &mut Parts, state: &AppState) -> Result<Self, Self::Rejection> {
+        let session = Session::from_request_parts(parts, state).await?;
+        Ok(WebSession(session))
+    }
+}
+
+impl FromRequestParts<AppState> for ApiSession {
+    type Rejection = ApiError;
+
+    async fn from_request_parts(parts: &mut Parts, state: &AppState) -> Result<Self, Self::Rejection> {
+        let session = Session::from_request_parts(parts, state).await?;
+        Ok(ApiSession(session))
     }
 }

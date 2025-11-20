@@ -45,8 +45,18 @@ impl From<SessionError> for WebError {
     }
 }
 
-impl IntoResponse for SessionError {
-    fn into_response(self) -> axum::response::Response {
-        WebError::from(self).into()
+impl From<SessionError> for ApiError {
+    fn from(value: SessionError) -> Self {
+        match value {
+            SessionError::ExtractError => ApiError::Unauthorized(Some("failed to read cookies".to_string())),
+            SessionError::NoSession => ApiError::Unauthorized(Some("no session".to_string())),
+            SessionError::DatabaseError(_e) => ApiError::DatabaseError("database error".to_string()),
+        }
     }
 }
+
+// impl IntoResponse for SessionError {
+//     fn into_response(self) -> axum::response::Response {
+//         WebError::from(self).into()
+//     }
+// }

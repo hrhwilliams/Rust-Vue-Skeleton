@@ -47,7 +47,7 @@ pub async fn create_session(
             .new_session()
             .await
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    
+
         let cookie = Cookie::build(("__Host-Http-Session", session_id))
             .http_only(true)
             .secure(true)

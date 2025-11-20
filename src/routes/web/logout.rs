@@ -1,9 +1,9 @@
 use axum::response::{IntoResponse, Redirect};
 
-use crate::{extractors::Session, routes::WebError};
+use crate::{extractors::WebSession, routes::WebError};
 
 #[tracing::instrument(skip(session))]
-pub async fn logout(mut session: Session) -> Result<impl IntoResponse, WebError> {
+pub async fn logout(WebSession(mut session): WebSession) -> Result<impl IntoResponse, WebError> {
     session.remove("token").await?;
     Ok(Redirect::to("/"))
 }
