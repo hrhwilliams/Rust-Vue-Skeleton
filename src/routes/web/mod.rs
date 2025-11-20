@@ -1,6 +1,7 @@
 mod errors;
 mod index;
 mod login;
+mod logout;
 mod redirect;
 
 pub use errors::*;
@@ -17,6 +18,7 @@ impl WebRoutes {
             .route("/", get(index::index))
             .route("/redirect", get(redirect::redirect))
             .route("/admin/login", get(login::login))
+            .route("/admin/logout", get(logout::logout))
         // .route("/admin/redirect", get(redirect))
     }
 }

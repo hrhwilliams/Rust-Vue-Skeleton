@@ -50,6 +50,11 @@ impl Session {
         );
         self.db.update_session_store(&self.session, &self.store).await
     }
+
+    pub async fn remove(&mut self, key: &str) -> Result<(), DatabaseError> {
+        self.store.remove(key);
+        self.db.update_session_store(&self.session, &self.store).await
+    }
 }
 
 impl FromRequestParts<AppState> for Session {
