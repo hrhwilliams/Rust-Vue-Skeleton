@@ -2,6 +2,7 @@ use axum::{Json, extract::State, response::IntoResponse};
 
 use crate::{app::AppState, extractors::Session, routes::ApiError};
 
+#[tracing::instrument(skip(app_state, session))]
 pub(crate) async fn me(State(app_state): State<AppState>, session: Session) -> Result<impl IntoResponse, ApiError> {
     let token = session
         .get("token")
