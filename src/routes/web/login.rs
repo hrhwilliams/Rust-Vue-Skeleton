@@ -5,10 +5,7 @@ use axum::{
     extract::{Query, State},
     response::{IntoResponse, Redirect},
 };
-use axum_extra::extract::{
-    PrivateCookieJar,
-    cookie::Cookie,
-};
+use axum_extra::extract::{PrivateCookieJar, cookie::Cookie};
 use time::Duration;
 
 use crate::{app::AppState, extractors::WebSession, routes::WebError};

@@ -41,8 +41,7 @@ pub async fn redirect(
         .max_age(Duration::seconds(60));
 
     Ok((
-        jar.remove("csrf_token")
-            .add(token_cookie),
+        jar.remove("csrf_token").add(token_cookie),
         Redirect::to("/oauth/finalize"),
     ))
 }
