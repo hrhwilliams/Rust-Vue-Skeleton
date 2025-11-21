@@ -1,8 +1,13 @@
+use axum::extract::FromRef;
+use axum_extra::extract::cookie::Key;
 use oauth2::{
-    AccessToken, AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, RevocationUrl, Scope, TokenResponse, TokenUrl, basic::BasicClient
+    AccessToken, AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, PkceCodeVerifier,
+    RedirectUrl, RevocationUrl, Scope, TokenResponse, TokenUrl, basic::BasicClient,
 };
 use reqwest;
 use serde::{Deserialize, Serialize};
+
+use crate::app::AppState;
 
 const DISCORD_CDN: &str = "http://cdn.discordapp.com";
 const DISCORD_AUTHORIZE_URL: &str = "https://discord.com/oauth2/authorize";
@@ -37,6 +42,12 @@ pub enum OAuthError {
     FailedQuery,
 }
 
+impl FromRef<AppState> for Key {
+    fn from_ref(app_state: &AppState) -> Self {
+        app_state.key()
+    }
+}
+
 #[derive(Clone)]
 pub struct OAuth {
     client_id: String,
@@ -61,7 +72,10 @@ impl OAuth {
                 AuthUrl::new(DISCORD_AUTHORIZE_URL.to_string()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?,
             )
             .set_token_uri(TokenUrl::new(DISCORD_TOKEN_URL.to_string()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?)
-            .set_revocation_url(RevocationUrl::new(DISCORD_TOKEN_REVOKE_URL.to_string()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?)
+            .set_revocation_url(
+                RevocationUrl::new(DISCORD_TOKEN_REVOKE_URL.to_string())
+                    .map_err(|_| OAuthError::FailedToCreateAuthUrl)?,
+            )
             .set_redirect_uri(
                 RedirectUrl::new(self.client_redirect.clone()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?,
             );
@@ -84,7 +98,10 @@ impl OAuth {
                 AuthUrl::new(DISCORD_AUTHORIZE_URL.to_string()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?,
             )
             .set_token_uri(TokenUrl::new(DISCORD_TOKEN_URL.to_string()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?)
-            .set_revocation_url(RevocationUrl::new(DISCORD_TOKEN_REVOKE_URL.to_string()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?)
+            .set_revocation_url(
+                RevocationUrl::new(DISCORD_TOKEN_REVOKE_URL.to_string())
+                    .map_err(|_| OAuthError::FailedToCreateAuthUrl)?,
+            )
             .set_redirect_uri(
                 RedirectUrl::new(self.client_redirect.clone()).map_err(|_| OAuthError::FailedToCreateAuthUrl)?,
             );

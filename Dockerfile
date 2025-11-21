@@ -7,7 +7,7 @@ RUN npm run build
 
 FROM rust:1.91-alpine3.22 AS chef
 WORKDIR /build
-RUN apk add --no-cache mold musl-dev openssl-dev openssl-libs-static
+RUN apk add --no-cache clang mold musl-dev openssl-dev openssl-libs-static
 RUN cargo install cargo-chef
 
 FROM chef AS planner

@@ -4,14 +4,15 @@ use axum::{
     extract::{Query, State},
     response::{IntoResponse, Redirect},
 };
+use axum_extra::extract::{PrivateCookieJar, cookie::Cookie};
 use oauth2::PkceCodeVerifier;
+use time::Duration;
 
 use crate::{app::AppState, extractors::WebSession, routes::WebError};
 
-#[tracing::instrument(skip(app_state, session))]
+#[tracing::instrument(skip(jar))]
 pub async fn redirect(
-    State(app_state): State<AppState>,
-    WebSession(mut session): WebSession,
+    jar: PrivateCookieJar,
     Query(query): Query<HashMap<String, String>>,
 ) -> Result<impl IntoResponse, WebError> {
     let code = query
@@ -21,30 +22,54 @@ pub async fn redirect(
         .get("state")
         .ok_or_else(|| WebError::InternalServerError("missing state".to_string()))?;
 
-    let csrf_token = session
-        .get::<String>("csrf_token")
-        .map_err(|e| WebError::InternalServerError(e.to_string()))?
-        .ok_or_else(|| WebError::InternalServerError("missing csrf_token".to_string()))?;
+    let csrf_token = jar
+        .get("csrf_token")
+        .ok_or_else(|| WebError::InternalServerError("missing csrf_token".to_string()))?
+        .value()
+        .to_string();
 
     if state != &csrf_token {
-        return Err(WebError::InternalServerError("state and csrf token do not match".to_string()));
+        return Err(WebError::InternalServerError(
+            "state and csrf token do not match".to_string(),
+        ));
     }
 
-    let pkce_verifier = session
-        .get::<PkceCodeVerifier>("verifier")
-        .map_err(|e| WebError::InternalServerError(e.to_string()))?;
+    let token_cookie = Cookie::build(("discord_token", code.clone()))
+        .http_only(true)
+        .secure(true)
+        .path("/")
+        .max_age(Duration::seconds(60));
+
+    Ok((
+        jar.remove("csrf_token")
+            .add(token_cookie),
+        Redirect::to("/oauth/finalize"),
+    ))
+}
+
+pub async fn finalize(
+    State(app_state): State<AppState>,
+    WebSession(mut session): WebSession,
+    jar: PrivateCookieJar,
+) -> Result<impl IntoResponse, WebError> {
+    let pkce_verifier = jar
+        .get("verifier")
+        .ok_or_else(|| WebError::InternalServerError("missing csrf_token".to_string()))?
+        .value()
+        .to_string();
+
+    let code = jar
+        .get("discord_token")
+        .ok_or_else(|| WebError::InternalServerError("missing csrf_token".to_string()))?
+        .value()
+        .to_string();
 
     let token = app_state
         .oauth
-        .get_token(
-            pkce_verifier.ok_or_else(|| WebError::InternalServerError("missing verifier".to_string()))?,
-            code,
-        )
+        .get_token(PkceCodeVerifier::new(pkce_verifier), &code)
         .await?;
 
-    session.remove("csrf_token").await?;
-    session.remove("verifier").await?;
     session.set("token", token).await?;
 
-    Ok(Redirect::to("/"))
+    Ok((jar.remove("verifier").remove("discord_token"), Redirect::to("/")))
 }

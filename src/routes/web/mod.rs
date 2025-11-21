@@ -16,7 +16,8 @@ impl WebRoutes {
     pub fn router() -> Router<AppState> {
         Router::<AppState>::new()
             .route("/", get(index::index))
-            .route("/redirect", get(redirect::redirect))
+            .route("/oauth/redirect", get(redirect::redirect))
+            .route("/oauth/finalize", get(redirect::finalize))
             .route("/admin/login", get(login::login))
             .route("/admin/logout", get(logout::logout))
         // .route("/admin/redirect", get(redirect))

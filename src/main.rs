@@ -33,10 +33,12 @@ async fn main() -> Result<(), std::io::Error> {
     let client_redirect = env::var("DISCORD_OAUTH_REDIRECT").expect("DISCORD_OAUTH_REDIRECT not set");
     let oauth = OAuth::new(client_id, client_secret, client_redirect);
 
+    let app_key = env::var("APP_KEY").expect("APP_KEY not set");
+
     let listener = TcpListener::bind(("0.0.0.0", port))
         .await
         .expect("Failed to bind to address");
 
-    let app = App::new(db, oauth);
+    let app = App::new(db, oauth, app_key);
     app.serve(listener).await
 }

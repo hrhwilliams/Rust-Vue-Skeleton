@@ -51,7 +51,7 @@ pub async fn create_session(
         let cookie = Cookie::build(("__Host-Http-Session", session_id))
             .http_only(true)
             .secure(true)
-            .same_site(SameSite::Lax)
+            .same_site(SameSite::Strict)
             .path("/")
             .expires(Expiration::Session)
             .max_age(Duration::days(7))

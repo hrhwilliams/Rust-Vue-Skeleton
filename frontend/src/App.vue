@@ -2,6 +2,7 @@
 import { defineComponent, ref, onMounted, onBeforeUnmount } from 'vue'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
+import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import type { CalendarOptions, EventInput, EventClickArg } from '@fullcalendar/core'
 
@@ -88,8 +89,13 @@ export default defineComponent({
     }
 
     const calendarOptions = ref<CalendarOptions>({
-      plugins: [dayGridPlugin, interactionPlugin],
+      plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
       initialView: 'dayGridMonth',
+      headerToolbar: {
+        left: 'prev,next',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek'
+      },
       events: [] as EventInput[],
       eventClick: handleEventClick,
     })

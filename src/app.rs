@@ -4,6 +4,8 @@ use axum::{
     http::{HeaderName, Request},
     middleware,
 };
+use axum_extra::extract::cookie::Key;
+use base64::{Engine, prelude::BASE64_STANDARD};
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::{
@@ -24,11 +26,17 @@ use crate::{
 pub struct AppState {
     pub db: PostgresDatabase,
     pub oauth: OAuth,
+    key: Key,
 }
 
 impl AppState {
-    pub fn new(db: PostgresDatabase, oauth: OAuth) -> Self {
-        Self { db, oauth }
+    pub fn new(db: PostgresDatabase, oauth: OAuth, app_key: String) -> Self {
+        let key = Key::from(&BASE64_STANDARD.decode(app_key).expect("malformed APP_KEY"));
+        Self { db, oauth, key }
+    }
+
+    pub fn key(&self) -> Key {
+        self.key.clone()
     }
 }
 
@@ -37,8 +45,8 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(db: PostgresDatabase, oauth: OAuth) -> Self {
-        let app_state = AppState::new(db, oauth);
+    pub fn new(db: PostgresDatabase, oauth: OAuth, app_key: String) -> Self {
+        let app_state = AppState::new(db, oauth, app_key);
         let files = ServeDir::new("./frontend/dist");
 
         let router = Router::new()
