@@ -3,7 +3,7 @@ use axum::{Json, extract::State, response::IntoResponse};
 use crate::{app::AppState, extractors::ApiSession, routes::ApiError};
 
 #[tracing::instrument(skip(app_state, session))]
-pub(crate) async fn me(
+pub async fn me(
     State(app_state): State<AppState>,
     ApiSession(session): ApiSession,
 ) -> Result<impl IntoResponse, ApiError> {

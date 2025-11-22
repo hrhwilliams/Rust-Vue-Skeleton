@@ -89,11 +89,11 @@ impl From<ApiError> for Response {
 impl From<OAuthError> for ApiError {
     fn from(value: OAuthError) -> Self {
         match value {
-            OAuthError::FailedToCreateAuthUrl => ApiError::OAuthError("failed to create auth URL".to_string()),
-            OAuthError::FailedToStoreAttempt => ApiError::OAuthError("failed to store OAuth state".to_string()),
-            OAuthError::FailedToRetrieveAttempt => ApiError::OAuthError("failed to retrieve OAuth state".to_string()),
-            OAuthError::FailedToGetToken(reason) => ApiError::OAuthError(reason),
-            OAuthError::FailedQuery => ApiError::OAuthError("failed to query with token".to_string()),
+            OAuthError::FailedToCreateAuthUrl => Self::OAuthError("failed to create auth URL".to_string()),
+            OAuthError::FailedToStoreAttempt => Self::OAuthError("failed to store OAuth state".to_string()),
+            OAuthError::FailedToRetrieveAttempt => Self::OAuthError("failed to retrieve OAuth state".to_string()),
+            OAuthError::FailedToGetToken(reason) => Self::OAuthError(reason),
+            OAuthError::FailedQuery => Self::OAuthError("failed to query with token".to_string()),
         }
     }
 }

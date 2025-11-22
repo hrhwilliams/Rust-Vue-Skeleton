@@ -27,9 +27,9 @@ impl From<WebError> for Response {
 impl From<DatabaseError> for WebError {
     fn from(value: DatabaseError) -> Self {
         match value {
-            DatabaseError::RngError => WebError::InternalServerError("random number generator".to_string()),
-            DatabaseError::SerdeError(e) => WebError::InternalServerError(e.to_string()),
-            DatabaseError::SqlxError(e) => WebError::InternalServerError(e.to_string()),
+            DatabaseError::RngError => Self::InternalServerError("random number generator".to_string()),
+            DatabaseError::SerdeError(e) => Self::InternalServerError(e.to_string()),
+            DatabaseError::SqlxError(e) => Self::InternalServerError(e.to_string()),
         }
     }
 }
@@ -37,11 +37,11 @@ impl From<DatabaseError> for WebError {
 impl From<OAuthError> for WebError {
     fn from(value: OAuthError) -> Self {
         match value {
-            OAuthError::FailedQuery => WebError::InternalServerError("".to_string()),
-            OAuthError::FailedToCreateAuthUrl => WebError::InternalServerError("".to_string()),
-            OAuthError::FailedToGetToken(reason) => WebError::InternalServerError(reason),
-            OAuthError::FailedToRetrieveAttempt => WebError::InternalServerError("".to_string()),
-            OAuthError::FailedToStoreAttempt => WebError::InternalServerError("".to_string()),
+            OAuthError::FailedQuery => Self::InternalServerError(String::new()),
+            OAuthError::FailedToCreateAuthUrl => Self::InternalServerError(String::new()),
+            OAuthError::FailedToGetToken(reason) => Self::InternalServerError(reason),
+            OAuthError::FailedToRetrieveAttempt => Self::InternalServerError(String::new()),
+            OAuthError::FailedToStoreAttempt => Self::InternalServerError(String::new()),
         }
     }
 }

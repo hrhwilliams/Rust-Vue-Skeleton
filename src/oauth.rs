@@ -56,7 +56,8 @@ pub struct OAuth {
 }
 
 impl OAuth {
-    pub fn new(client_id: String, client_secret: String, client_redirect: String) -> Self {
+    #[must_use]
+    pub const fn new(client_id: String, client_secret: String, client_redirect: String) -> Self {
         Self {
             client_id,
             client_secret,
@@ -64,7 +65,7 @@ impl OAuth {
         }
     }
 
-    /// Adapted from https://docs.rs/oauth2/latest/oauth2/
+    /// Adapted from <https://docs.rs/oauth2/latest/oauth2/>
     pub fn get_oauth_url(&self) -> Result<(String, CsrfToken, PkceCodeVerifier), OAuthError> {
         let client = BasicClient::new(ClientId::new(self.client_id.clone()))
             .set_client_secret(ClientSecret::new(self.client_secret.clone()))

@@ -15,10 +15,10 @@ pub enum AuthError {
 impl From<AuthError> for ApiError {
     fn from(value: AuthError) -> Self {
         match value {
-            AuthError::MissingApiKey => ApiError::Unauthorized(Some("missing API key header".to_string())),
-            AuthError::MissingUserAgent => ApiError::Unauthorized(Some("missing user agent header".to_string())),
-            AuthError::InvalidCredentials => ApiError::Unauthorized(Some("API key was invalid".to_string())),
-            AuthError::DatabaseError(e) => ApiError::from(e),
+            AuthError::MissingApiKey => Self::Unauthorized(Some("missing API key header".to_string())),
+            AuthError::MissingUserAgent => Self::Unauthorized(Some("missing user agent header".to_string())),
+            AuthError::InvalidCredentials => Self::Unauthorized(Some("API key was invalid".to_string())),
+            AuthError::DatabaseError(e) => Self::from(e),
         }
     }
 }
@@ -39,10 +39,10 @@ pub enum SessionError {
 impl From<SessionError> for WebError {
     fn from(value: SessionError) -> Self {
         match value {
-            SessionError::ExtractError => WebError::InternalServerError("extract".to_string()),
-            SessionError::NoSession => WebError::InternalServerError("no session".to_string()),
-            SessionError::NoSessionInDatabase => WebError::InternalServerError("no session in db".to_string()),
-            SessionError::DatabaseError(_e) => WebError::InternalServerError("database error".to_string()),
+            SessionError::ExtractError => Self::InternalServerError("extract".to_string()),
+            SessionError::NoSession => Self::InternalServerError("no session".to_string()),
+            SessionError::NoSessionInDatabase => Self::InternalServerError("no session in db".to_string()),
+            SessionError::DatabaseError(_e) => Self::InternalServerError("database error".to_string()),
         }
     }
 }
@@ -50,10 +50,10 @@ impl From<SessionError> for WebError {
 impl From<SessionError> for ApiError {
     fn from(value: SessionError) -> Self {
         match value {
-            SessionError::ExtractError => ApiError::Unauthorized(Some("failed to read cookies".to_string())),
-            SessionError::NoSession => ApiError::Unauthorized(Some("no session".to_string())),
-            SessionError::NoSessionInDatabase => ApiError::Unauthorized(Some("no session in db".to_string())),
-            SessionError::DatabaseError(e) => ApiError::from(e),
+            SessionError::ExtractError => Self::Unauthorized(Some("failed to read cookies".to_string())),
+            SessionError::NoSession => Self::Unauthorized(Some("no session".to_string())),
+            SessionError::NoSessionInDatabase => Self::Unauthorized(Some("no session in db".to_string())),
+            SessionError::DatabaseError(e) => Self::from(e),
         }
     }
 }

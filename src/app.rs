@@ -30,11 +30,13 @@ pub struct AppState {
 }
 
 impl AppState {
+    #[must_use]
     pub fn new(db: PostgresDatabase, oauth: OAuth, app_key: String) -> Self {
         let key = Key::from(&BASE64_STANDARD.decode(app_key).expect("malformed APP_KEY"));
         Self { db, oauth, key }
     }
 
+    #[must_use]
     pub fn key(&self) -> Key {
         self.key.clone()
     }

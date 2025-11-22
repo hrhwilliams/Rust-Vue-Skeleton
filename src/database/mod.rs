@@ -17,6 +17,7 @@ pub struct PostgresDatabase {
 }
 
 impl PostgresDatabase {
+    #[must_use]
     pub async fn new(postgres_url: &str) -> Self {
         let pool = PgPool::connect(postgres_url)
             .await
